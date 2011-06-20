@@ -190,8 +190,8 @@ if (is(T == real) || is(T == double) || is(T == float)
 	alias Vector!(T,dim_) VCol;
 	
 	union {
-		T cell[cells]; 					/// Holds a squared matrix
-		VCol col[dim_];	/// Matrix like of a array of column vectors
+		T cell[cells]; 					/// Matrix like of a array of cells
+		VCol col[dim_];					/// Matrix like of a array of column vectors
 	}
 	
 	// Consts
