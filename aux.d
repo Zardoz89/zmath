@@ -4,6 +4,7 @@
 module zmath.aux;
 
 import std.math;
+import std.parallelism;
 
 version (unittest) {
 	import std.stdio;
@@ -95,4 +96,3 @@ unittest {
 	writeln("cmpFloat : OK");
 	writeln();
 }
-

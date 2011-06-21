@@ -3,10 +3,11 @@
 */
 module zmath.matrix;
 
-import zmath.vector;
 import zmath.aux;
+import zmath.vector;
 
 import std.math;
+import std.parallelism;
 import std.conv;
 
 version (unittest) {
@@ -187,11 +188,11 @@ if (is(T == real) || is(T == double) || is(T == float)
 	enum size_t dim = dim_; 			/// Matrix Dimension
 	enum size_t cells = dim*dim; 	/// Matrix number of cells
 	
-	alias Vector!(T,dim_) VCol;
+	private alias Vector!(T,dim_) VCol;
 	
 	union {
-		T cell[cells]; 					/// Matrix like of a array of cells
-		VCol col[dim_];					/// Matrix like of a array of column vectors
+		private T cell[cells]; 					/// Matrix like of a array of cells
+		private VCol col[dim_];					/// Matrix like of a array of column vectors
 	}
 	
 	// Consts
@@ -374,7 +375,6 @@ if (is(T == real) || is(T == double) || is(T == float)
 				}
 			}
 		}
-		
 		return mat;
 	}
 	
