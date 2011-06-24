@@ -125,7 +125,7 @@ if (is(T == real) || is(T == double) || is(T == float) )
 	enum size_t dim = 4; /// Quaternion Dimension
 	
 	union {
-		T[4] coor;				/// Quaternion coords in a rray
+		package T[4] coor;				/// Quaternion coords in a rray
 		struct {
 			T i;						/// i complex component
 			T j;						/// j complex component

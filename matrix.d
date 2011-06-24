@@ -191,8 +191,8 @@ if (is(T == real) || is(T == double) || is(T == float)
 	private alias Vector!(T,dim_) VCol;
 	
 	union {
-		private T cell[cells]; 					/// Matrix like of a array of cells
-		private VCol col[dim_];					/// Matrix like of a array of column vectors
+		package T cell[cells]; 					/// Matrix like of a array of cells
+		package VCol col[dim_];					/// Matrix like of a array of column vectors
 	}
 	
 	// Consts

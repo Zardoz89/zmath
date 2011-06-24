@@ -18,6 +18,8 @@ unittest {
 	auto v2 = Vec2r(2,0);
 	auto v3 = Vec2r(1,1);
 	
+	assert (isVector!(typeof(v1))); // Yep it's a Vector
+	
 	assert (v2.x == 2);
 	assert (v2.coor[0] == 2);
 	assert (v2[0] == 2);
@@ -128,6 +130,17 @@ unittest {
 	assert(! nain.isFinite());
 	writeln("isOk() and isFinite() : OK");
 	
+	// Check convertTo!
+	auto v2f = v2.convertTo!Vec2f;
+	auto v2d = v2.convertTo!Vec2d;
+	auto vecf = Vec2f(1,1);
+	auto vec4d = vecf.convertTo!Vec4d;
+	assert(is(typeof(v2f) == Vec2f));
+	assert(is(typeof(v2d) == Vec2d));
+	assert(is(typeof(vec4d) == Vec4d));
+	
+	writeln("convertTo! : OK");
+	
 	writeln();
 }
 
@@ -147,16 +160,14 @@ alias Vector!(float,4) Vec4f; /// Alias of a 4d Vector with floats
 * N-Dimensional Vector over a FloatPoint type, where N must be 2,3 or 4
 */
 public struct Vector(T, size_t dim_)
-if (is(T == real) || is(T == double) || is(T == float) ) 
-{
+if (is(T == real) || is(T == double) || is(T == float) ) {
+	static enum size_t dim = dim_; 		/// Vector Dimension
 	
-	enum size_t dim = dim_; /// Vector Dimension
-	
-	static assert (dim >= 2 && dim <= 4);
-	static assert (is(T : real));
+	static assert (dim >= 2 && dim <= 4, "Not valid dimension size.");
+	static assert (is(T : real), "Type not is a Float Point type.");
 	
 	union {
-		T[dim] coor; /// Vector coords like Array
+		package T[dim] coor; /// Vector coords like Array
 		
 		struct {
 			static if( dim >= 1) T x;
@@ -304,7 +315,7 @@ if (is(T == real) || is(T == double) || is(T == float) )
 	/**
 	* Approximated equality with controlable precision
 	*/
-	const bool equal(ref const Vector rhs, T maxRelDiff, T maxAbsDiff = 1e-05) const {
+	bool equal(ref const Vector rhs, T maxRelDiff, T maxAbsDiff = 1e-05) const {
 		static if (dim == 2) 
 			return approxEqual(x, rhs.x, maxRelDiff, maxAbsDiff) && approxEqual(y, rhs.y, maxRelDiff, maxAbsDiff);
 		static if (dim == 3) 
@@ -494,6 +505,21 @@ if (is(T == real) || is(T == double) || is(T == float) )
 	}
 	
 	/**
+	* to!type method to converto to other matrix types
+	*/
+	Tout convertTo( Tout ) () {
+		static assert (isVector!(Tout), "This type not is a Vector");
+		static assert (Tout.dim >= dim, "Original Vector bigger that destiny Vector");
+		Tout newVector; auto i = 0;
+		for (; i < dim; i++)
+			newVector.coor[i] =  to!(typeof(newVector.x))(coor[i]); 
+		for (; i< Tout.dim; i++) // Expands a small vector to a bigger dimension with 0 value in extra dimension
+			newVector.coor[i] = 0;
+		
+		return newVector;
+	}
+	
+	/**
 	* Returns a string representation of this vector
 	*/
 	string toString() {
@@ -506,5 +532,27 @@ if (is(T == real) || is(T == double) || is(T == float) )
 		return ret;		
 	}
 	
+}
+
+/**
+* Say if a thing it's a Vector
+*/
+template isVector(T)
+{
+	//immutable bool isVector = is(T == Vector);
+  immutable bool isVector = __traits(compiles,
+        (){  
+            T t;
+            static assert(T.dim >= 2 && T.dim <= 4);
+            auto coor = t.coor;
+            auto x = t.x;
+            auto y = t.y;
+            static if(t.dim >= 3)
+                auto z = t.z;
+            static if(t.dim >= 4)
+                auto w = t.w;
+            // TODO : Should test for methods ?        
+        }
+    );
 }
 
