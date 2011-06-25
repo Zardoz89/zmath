@@ -131,12 +131,12 @@ unittest {
 	writeln("isOk() and isFinite() : OK");
 	
 	// Check convertTo!
-	auto v2f = v2.convertTo!Vec2f;
-	auto v2d = v2.convertTo!Vec2d;
+	auto v2f = cast(Vec2f) v2;
+	auto v2d = cast(Vec2d) v2;
 	auto vecf = Vec2f(1,1);
-	//auto vec4d = vecf.convertTo!Vec4d;
-	auto vec4d = toImpl!(Vec4d, Vec2f) (vecf);
+	//auto vec4d = toImpl!(Vec4d, Vec2f) (vecf);
 	//auto vec4d = to!Vec4d (vecf);
+	auto vec4d = cast(Vec4d) vecf;
 	assert(is(typeof(v2f) == Vec2f));
 	assert(is(typeof(v2d) == Vec2d));
 	assert(is(typeof(vec4d) == Vec4d));
@@ -527,9 +527,10 @@ if (__traits(isFloating, T) ) {
 	}
 	
 	/**
-	* to!type method to converto to other vector types
+	* to!type method to convert to other vector types
 	*/
-	Tout convertTo( Tout ) () {
+	Tout opCast( Tout ) () 
+	if (isVector!(Tout) && Tout.dim >= dim) {
 		static assert (isVector!(Tout), "This type not is a Vector");
 		static assert (Tout.dim >= dim, "Original Vector bigger that destiny Vector");
 		
@@ -587,7 +588,7 @@ template isVector(T)
 
 /**
 * to converto a vector to other vector
-*/
+*//*
 T toImpl(T, S)(S s) 
 if (!implicitlyConverts!(S, T) && isVector!T && isVector!S )
 {
@@ -607,4 +608,4 @@ if (!implicitlyConverts!(S, T) && isVector!T && isVector!S )
 			newVector.coor[i] = 0;
 		
 		return newVector;
-}
+}*/
