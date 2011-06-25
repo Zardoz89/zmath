@@ -125,7 +125,7 @@ if (is(T == real) || is(T == double) || is(T == float) )
 	enum size_t dim = 4; /// Quaternion Dimension
 	
 	union {
-		package T[4] coor;				/// Quaternion coords in a rray
+		private T[4] coor;				/// Quaternion coords in a rray
 		struct {
 			T i;						/// i complex component
 			T j;						/// j complex component
@@ -181,7 +181,7 @@ if (is(T == real) || is(T == double) || is(T == float) )
 	this(in Vector!(T, 3) v) {
 		size_t i;
 		for (; i< dim && i< v.dim ; i++) {
-			coor[i] = v.coor[i];
+			coor[i] = v[i];
 		}
 		for (;i< dim; i++) {
 			coor[i] = 0;
@@ -196,7 +196,7 @@ if (is(T == real) || is(T == double) || is(T == float) )
 	this(in Vector!(T, 4) v) {
 		size_t i;
 		for (; i< dim && i< v.dim ; i++) {
-			coor[i] = v.coor[i];
+			coor[i] = v[i];
 		}
 	}
 	/**

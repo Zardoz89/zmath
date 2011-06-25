@@ -134,7 +134,9 @@ unittest {
 	auto v2f = v2.convertTo!Vec2f;
 	auto v2d = v2.convertTo!Vec2d;
 	auto vecf = Vec2f(1,1);
-	auto vec4d = vecf.convertTo!Vec4d;
+	//auto vec4d = vecf.convertTo!Vec4d;
+	auto vec4d = toImpl!(Vec4d, Vec2f) (vecf);
+	//auto vec4d = to!Vec4d (vecf);
 	assert(is(typeof(v2f) == Vec2f));
 	assert(is(typeof(v2d) == Vec2d));
 	assert(is(typeof(vec4d) == Vec4d));
@@ -160,14 +162,15 @@ alias Vector!(float,4) Vec4f; /// Alias of a 4d Vector with floats
 * N-Dimensional Vector over a FloatPoint type, where N must be 2,3 or 4
 */
 public struct Vector(T, size_t dim_)
-if (is(T == real) || is(T == double) || is(T == float) ) {
+if (__traits(isFloating, T) ) {
 	static enum size_t dim = dim_; 		/// Vector Dimension
 	
 	static assert (dim >= 2 && dim <= 4, "Not valid dimension size.");
-	static assert (is(T : real), "Type not is a Float Point type.");
+	static assert (__traits(isFloating, T), "Type not is a Float Point type.");
+	static assert (is(T : real), "Type not is like a Float Point type.");
 	
 	union {
-		package T[dim] coor; /// Vector coords like Array
+		private T[dim] coor; /// Vector coords like Array
 		
 		struct {
 			static if( dim >= 1) T x;
@@ -178,20 +181,20 @@ if (is(T == real) || is(T == double) || is(T == float) ) {
 	}
 	
 	// Consts
-	static if (dim == 2) { // R2
+	static if (dim == 2) { // for R2
 		public static enum Vector!(T,2) ZERO = Vector!(T,2)(0, 0);	 /// Origin
 		public static enum Vector!(T,2) X_AXIS = Vector!(T,2)(1, 0); /// X Axis in R2
 		public static enum Vector!(T,2) Y_AXIS = Vector!(T,2)(0, 1); /// Y Axis in R2
 	}
 	
-	static if (dim == 3) { // R3
+	static if (dim == 3) { // for R3
 		public static enum Vector!(T,3) ZERO = Vector!(T,3)(0, 0, 0);	 	/// Origin
 		public static enum Vector!(T,3) X_AXIS = Vector!(T,3)(1, 0, 0); /// X Axis in R3	
 		public static enum Vector!(T,3) Y_AXIS = Vector!(T,3)(0, 1, 0); /// Y Axis in R3
 		public static enum Vector!(T,3) Z_AXIS = Vector!(T,3)(0, 0, 1); /// Z Axis in R3
 	}
 	
-	static if (dim == 4) { // R4
+	static if (dim == 4) { // for R4
 		public static enum Vector!(T,4) ZERO = Vector!(T,4)(0, 0, 0, 0);	 /// Origin
 		public static enum Vector!(T,4) X_AXIS = Vector!(T,4)(1, 0, 0, 0); /// X Axis in R4	
 		public static enum Vector!(T,4) Y_AXIS = Vector!(T,4)(0, 1, 0, 0); /// Y Axis in R4
@@ -250,7 +253,7 @@ if (is(T == real) || is(T == double) || is(T == float) ) {
 	T opIndex(size_t i) const { return coor[i];}
 	
 	/**
-	* Assigns a value to a coord
+	* Assigns a value to a i coord
 	*/
 	void opIndexAssign(T c, size_t i) {
 		coor[i] = c;
@@ -274,6 +277,8 @@ if (is(T == real) || is(T == double) || is(T == float) ) {
 	
 	/**
 	* Define Equality 
+	* Params:
+	* rhs = Vector at rigth of '=='
 	*/
 	bool opEquals(ref const Vector rhs) const {
 		if (x != rhs.x) return false;
@@ -289,6 +294,8 @@ if (is(T == real) || is(T == double) || is(T == float) ) {
 	
 	/**
 	* Approximated equality
+	* Params:
+	* rhs = Vector to compare with this vector
 	*/
 	bool equal(ref const Vector rhs) const {
 		static if (dim == 2) 
@@ -302,6 +309,9 @@ if (is(T == real) || is(T == double) || is(T == float) ) {
 		
 	/**
 	* Approximated equality with controlable precision
+	* Params:
+	* rhs = Vector to compare with this vector
+	* maxDiff = 
 	*/
 	bool equal(ref const Vector rhs, T maxDiff) const {
 		static if (dim == 2) 
@@ -314,6 +324,10 @@ if (is(T == real) || is(T == double) || is(T == float) ) {
 	
 	/**
 	* Approximated equality with controlable precision
+	* Params:
+	* rhs = Vector to compare with this vector
+	* maxRelDiff = Maximun relative difference
+	* maxAbsDiff = Maximun absolute difference
 	*/
 	bool equal(ref const Vector rhs, T maxRelDiff, T maxAbsDiff = 1e-05) const {
 		static if (dim == 2) 
@@ -395,13 +409,14 @@ if (is(T == real) || is(T == double) || is(T == float) ) {
 	
 	/**
 	* It's a unitary vector (length == 1)
+	* Returns : True if length approxEqual to 1.0
 	*/
 	@property bool isUnit() const {
 		return approxEqual (abs( this.sq_length - 1.0), 0 );
 	}
 	
 	/**
-	* Normalize this vector 
+	* Normalize this vector
 	*/
 	void normalize() {
 		if (!isUnit()) {
@@ -430,6 +445,7 @@ if (is(T == real) || is(T == double) || is(T == float) ) {
 	* Params:
 	*	a = Vector to proyect
 	* b = Vector where proyect vector a
+	* Returns : A Vector that it's proyection of Vector a over Vector b
 	*/
 	static Vector projectOnTo (Vector a,Vector b) {
 		b.normalize();
@@ -442,7 +458,8 @@ if (is(T == real) || is(T == double) || is(T == float) ) {
 	/**
 	* Obtains the proyection of this vector over other vector
 	* Params:
-	* b = Vector where proyect vector a
+	* b = Vector where proyect this vector
+	* Returns : A Vector that it's proyection of this Vector over Vector b
 	*/
 	Vector projectOnTo(Vector b) {
 		return this.projectOnTo(this,b);
@@ -452,6 +469,7 @@ if (is(T == real) || is(T == double) || is(T == float) ) {
 	* Calculate the distance between two points pointed by this vector and other
 	* Params :
 	*	b = Vector B
+	* Returns : Distance between the point pointed by this vector and other point
 	*/
 	T distance( in Vector b) {
 		auto d = this - b;
@@ -462,6 +480,7 @@ if (is(T == real) || is(T == double) || is(T == float) ) {
 	* Calculate the squared distance between two points pointed by this vector and other
 	* Params :
 	*	b = Vector B
+	* Returns : Squared distance between the point pointed by this vector and other point
 	*/
 	T sq_distance( in Vector b) {
 		auto d = this - b;
@@ -472,6 +491,7 @@ if (is(T == real) || is(T == double) || is(T == float) ) {
 	* Rotation in R2
 	* Params:
 	* 	axis = Rotation axis
+	* Returns : A vector that is the rotation of this vector
 	*/
 	static if (dim == 2)
 	Vector rotate (real angle) const {
@@ -482,6 +502,7 @@ if (is(T == real) || is(T == double) || is(T == float) ) {
 	
 	/**
 	* Checks that the vector not have a weird NaN value
+	* Returns : True if this vector not have a NaN value
 	*/
 	bool isOk() {
 		if (isNaN(x) ==0 || isNaN(y) ==0) return true;
@@ -494,6 +515,7 @@ if (is(T == real) || is(T == double) || is(T == float) ) {
 	
 	/**
 	* Checks that the vector have finite values
+	* Returns : True if this vector have finite values (not infinite value or NaNs)
 	*/
 	bool isFinite() {
 		if (std.math.isFinite(x) && std.math.isFinite(y)) return true;
@@ -505,14 +527,21 @@ if (is(T == real) || is(T == double) || is(T == float) ) {
 	}
 	
 	/**
-	* to!type method to converto to other matrix types
+	* to!type method to converto to other vector types
 	*/
 	Tout convertTo( Tout ) () {
 		static assert (isVector!(Tout), "This type not is a Vector");
 		static assert (Tout.dim >= dim, "Original Vector bigger that destiny Vector");
+		
 		Tout newVector; auto i = 0;
-		for (; i < dim; i++)
-			newVector.coor[i] =  to!(typeof(newVector.x))(coor[i]); 
+		static if (is (typeof(newVector.x) == typeof(this.x)))  {
+			for (; i < dim; i++)
+				newVector.coor[i] =  coor[i];
+		} else {
+			for (; i < dim; i++)	
+				newVector.coor[i] =  to!(typeof(newVector.x))(coor[i]); 
+		}
+			
 		for (; i< Tout.dim; i++) // Expands a small vector to a bigger dimension with 0 value in extra dimension
 			newVector.coor[i] = 0;
 		
@@ -556,3 +585,26 @@ template isVector(T)
     );
 }
 
+/**
+* to converto a vector to other vector
+*/
+T toImpl(T, S)(S s) 
+if (!implicitlyConverts!(S, T) && isVector!T && isVector!S )
+{
+    static assert (isVector!T, "This type not is a Vector");
+		static assert (T.dim >= S.dim, "Original Vector bigger that destiny Vector");
+		
+		T newVector; auto i = 0;
+		static if (is (typeof(newVector.x) == typeof(s.x)))  {
+			for (; i < S.dim; i++)
+				newVector.coor[i] =  s.coor[i];
+		} else {
+			for (; i < S.dim; i++)	
+				newVector.coor[i] =  to!(typeof(newVector.x))(s.coor[i]); 
+		}
+			
+		for (; i< T.dim; i++) // Expands a small vector to a bigger dimension with 0 value in extra dimension
+			newVector.coor[i] = 0;
+		
+		return newVector;
+}
