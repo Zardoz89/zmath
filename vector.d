@@ -591,7 +591,7 @@ template isVector(T)
 T toImpl(T, S)(S s) 
 if (!implicitlyConverts!(S, T) && isVector!T && isVector!S )
 {
-    static assert (isVector!T, "This type not is a Vector");
+    static assert (isVector!T, "This type not is a Vector"); // Ok, redundant
 		static assert (T.dim >= S.dim, "Original Vector bigger that destiny Vector");
 		
 		T newVector; auto i = 0;

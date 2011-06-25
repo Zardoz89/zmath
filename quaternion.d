@@ -21,6 +21,8 @@ unittest{
 	auto qj = Qua_d(0,1,0,0);
 	auto qi = Qua_d(1,0,0,0);
 	
+	assert (isQuaternion!(typeof(qj)));
+	
 	// Check equality
 	assert( q1 == q1);
 	assert( q1 != qj);
@@ -106,6 +108,21 @@ unittest{
 	
 	writeln("To rotaton Matrix : OK");
 	
+	// check conversion between Quaternions
+	auto qf = toImpl!(Qua_f, Qua_d) (q1);
+	auto qreal = toImpl!(Qua_r, Qua_d) (q1);
+	auto qd = toImpl!(Qua_d, Qua_f) (qf);
+	
+	assert(is(typeof(qf) == Qua_f));
+	assert(is(typeof(qreal) == Qua_r));
+	assert(is(typeof(qd) == Qua_d));
+	for (auto i=0; i< 4; i++ ) {
+		assert( qf[i] == 1);
+		assert( qreal[i] == 1);
+		assert( qd[i] == 1);
+	}	
+	writeln("Conversion between Quaternions : OK");
+	
 	writeln();
 }
 
@@ -122,7 +139,7 @@ if (is(T == real) || is(T == double) || is(T == float) )
 {
 	static assert (is(T : real));
 	
-	enum size_t dim = 4; /// Quaternion Dimension
+	static enum size_t dim = 4; /// Quaternion Dimension
 	
 	union {
 		private T[4] coor;				/// Quaternion coords in a rray
@@ -489,3 +506,43 @@ if (is(T == real) || is(T == double) || is(T == float) )
 	
 }
 
+/**
+* Say if a thing it's a Quaternion
+*/
+template isQuaternion(T)
+{
+	//immutable bool isQuaternion = is(T == Vector);
+  immutable bool isQuaternion = __traits(compiles,
+        (){  
+            T t;
+            static assert(T.dim == 4);
+            auto coor = t.coor;
+            auto x = t.x;
+            auto y = t.y;
+            auto z = t.z;
+            auto w = t.w;
+            T conj = t.conj();
+            // TODO : Should test for methods ?        
+        }
+    );
+}
+
+/**
+* to converto a Quaternion to other Quaternion
+*/
+T toImpl(T, S)(S s) 
+if (!implicitlyConverts!(S, T) && isQuaternion!T && isQuaternion!S )
+{
+    static assert (isQuaternion!T, "This type not is a Quaternion"); // Ok, redundant
+		
+		T newQ;
+		static if (is (typeof(newQ.x) == typeof(s.x)))  {
+			foreach (i ,se ;s.coor)
+				newQ.coor[i] =  se;
+		} else {
+			foreach (i ,se ;s.coor)
+				newQ.coor[i] =  to!(typeof(newQ.x))(se); 
+		}
+		
+		return newQ;
+}
