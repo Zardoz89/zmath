@@ -130,7 +130,7 @@ unittest {
 	assert(! nain.isFinite());
 	writeln("isOk() and isFinite() : OK");
 	
-	// Check convertTo!
+	// Check casting
 	auto v2f = cast(Vec2f) v2;
 	auto v2d = cast(Vec2d) v2;
 	auto vecf = Vec2f(1,1);
@@ -141,7 +141,7 @@ unittest {
 	assert(is(typeof(v2d) == Vec2d));
 	assert(is(typeof(vec4d) == Vec4d));
 	
-	writeln("convertTo! : OK");
+	writeln("Vector Casting : OK");
 	
 	writeln();
 }
@@ -527,7 +527,7 @@ if (__traits(isFloating, T) ) {
 	}
 	
 	/**
-	* to!type method to convert to other vector types
+	* Casting method to convert to other vector types
 	*/
 	Tout opCast( Tout ) () 
 	if (isVector!(Tout) && Tout.dim >= dim) {
@@ -586,9 +586,10 @@ template isVector(T)
     );
 }
 
+/+
 /**
 * to converto a vector to other vector
-*//*
+*/
 T toImpl(T, S)(S s) 
 if (!implicitlyConverts!(S, T) && isVector!T && isVector!S )
 {
@@ -608,4 +609,4 @@ if (!implicitlyConverts!(S, T) && isVector!T && isVector!S )
 			newVector.coor[i] = 0;
 		
 		return newVector;
-}*/
+}+/

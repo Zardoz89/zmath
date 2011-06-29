@@ -20,16 +20,16 @@ unittest {
 	// Fundamental Matrixes
 	auto z = Mat4r.ZERO;
 	auto ide = Mat4r.IDENTITY;
-	writeln("Zero:");
-	writeln(z); writeln();
+	//writeln("Zero:");
+	//writeln(z); writeln();
 	
 	foreach (ind; 0..z.cells) {
 		assert(z.cell[ind] == 0.0L);
 	}
 	writeln("Zero Matrix : OK");
 	
-	writeln("Identity:");
-	writeln(ide); writeln();
+	//writeln("Identity:");
+	//writeln(ide); writeln();
 	foreach (i; 0..Mat4r.dim) {
 		foreach (j; 0..Mat4r.dim) {
 			if (i == j) {
@@ -40,6 +40,10 @@ unittest {
 		}
 	}
 	writeln("Identity Matrix : OK");
+	
+	// Check isMatrix
+	assert(isMatrix!(typeof(ide)));
+	writeln("isMatrix : OK");
 	
 	// Check == and !=
 	assert(z != ide);
@@ -55,6 +59,13 @@ unittest {
 	assert(!full_nan.isOk());
 	assert(!full_nan.isFinite());
 	writeln("isOk and isFinite : OK");
+	
+	// Check Column assignation
+	auto tcol = ide;
+	auto v = cast(tcol.VCol) Vec3f(1, 2 ,3 );
+	tcol[2] = v;
+	assert (tcol[2] == v);
+	writeln("Column vector assignation : OK");
 	
 	// Check + - unary operators
 	auto n_ide = -ide;
@@ -162,6 +173,22 @@ unittest {
 	assert (m2_inv == Mat2r([-.4, 1,  1, -2]) );
 	writeln("Inversion : OK");
 	
+	// Check casting
+	auto mat2f = Mat2f.IDENTITY;
+	mat2f[1, 0] = 5;
+	auto mat2r = cast(Mat2r) mat2f;
+	auto mat2d = cast(Mat2d) mat2f;
+	auto mat4d = cast(Mat4d) mat2r;
+	assert(is(typeof(mat2r) == Mat2r));
+	assert(is(typeof(mat2d) == Mat2d));
+	assert(is(typeof(mat4d) == Mat4d));
+	
+	assert(mat2f[0, 0] == mat4d[0, 0]);
+	assert(mat2f[0, 1] == mat4d[0, 1]);
+	assert(mat2f[1, 0] == mat4d[1, 0]);
+	assert(mat2f[1, 1] == mat4d[1, 1]);
+	writeln("Matrix Casting : OK");
+	
 	writeln();
 }
 
@@ -176,7 +203,6 @@ alias Matrix!(double,4) Mat4d;		///	4D squared matrix of doubles
 alias Matrix!(real,2) 	Mat2r;		/// 2D squared matrix of reals
 alias Matrix!(real,3) 	Mat3r;		/// 3D squared matrix of reals
 alias Matrix!(real,4) 	Mat4r;		///	4D squared matrix of reals
-alias Mat4f							GLMatrix;	///	OpenGL 4D compilant matrix
 
 /**
 * Defines a squared Matrix of n = 2, 3 or 4 size, like a linear array of numbers
@@ -185,13 +211,13 @@ struct Matrix(T, size_t dim_)
 if (is(T == real) || is(T == double) || is(T == float)  
 		&& (( dim_ >= 2 ) && ( dim_ <= 4 ) ))   
 { 
-	enum size_t dim = dim_; 			/// Matrix Dimension
-	enum size_t cells = dim*dim; 	/// Matrix number of cells
+	static enum size_t dim = dim_; 			/// Matrix Dimension
+	static enum size_t cells = dim*dim; 	/// Matrix number of cells
 	
-	private alias Vector!(T,dim_) VCol;
+	alias Vector!(T,dim_) VCol;
 	
 	union {
-		private T cell[cells]; 					/// Matrix like of a array of cells
+		private T cell[cells]; 					/// Matrix like of a array of cells of major-column
 		private VCol col[dim_];					/// Matrix like of a array of column vectors
 	}
 	
@@ -232,7 +258,12 @@ if (is(T == real) || is(T == double) || is(T == float)
 	* Assigns a new column vector
 	*/
 	void opIndexAssign(VCol v, size_t j) {
-		col[j] = v;
+		//static assert (v.dim <= dim, "Vector have a bigger dimension that this maxtrix.");
+		//static if (v.dim != dim) {
+		//	col[j] = cast(VCol) v;
+		//} else {
+			col[j] = v;
+		//}
 	}
 	
 	/**
@@ -289,7 +320,7 @@ if (is(T == real) || is(T == double) || is(T == float)
 	/**
 	* Approximated equality
 	*/
-	const bool equal(ref const Matrix rhs, T maxRelDiff, T maxAbsDiff = 1e-05) {
+	bool equal(ref const Matrix rhs, T maxRelDiff, T maxAbsDiff = 1e-05) const {
 		if (! col[0].equal(rhs.col[0], maxRelDiff, maxAbsDiff) || ! col[1].equal(rhs.col[1], maxRelDiff, maxAbsDiff) ) return false;
 		static if (dim >= 3)
 			if (! col[2].equal(rhs.col[2], maxRelDiff, maxAbsDiff)) return false;
@@ -416,6 +447,10 @@ if (is(T == real) || is(T == double) || is(T == float)
 		}
 	}
 	
+	/**
+	* Calcs this maxtrix inverse
+	* Returns: A !isOk() matrix full of NaNs if this matrix isn't inverible
+	*/
 	Matrix inverse() const {
 		Matrix mat;
 		auto det = this.determinant();
@@ -488,6 +523,29 @@ if (is(T == real) || is(T == double) || is(T == float)
 	}
 	
 	/**
+	* to!type method to convert to other vector types
+	*/
+	Tout opCast( Tout ) () 
+	if (isMatrix!(Tout) && Tout.dim >= dim) {
+		static assert (isMatrix!(Tout), "This type not is a Matrix");
+		static assert (Tout.dim >= dim, "Original Matrix bigger that destiny Vector");
+		
+		Tout newMat; auto i = 0;
+		static if (is (typeof(newMat[0, 0]) == typeof(this[0, 0])))  {
+			for (; i < dim; i++)
+				newMat[i] =  this[i];
+		} else {
+			for (; i < dim; i++)	
+				newMat[i] =  cast(newMat.VCol) this[i]; //Vector Casting auto expands rows
+		}
+			
+		for (; i< Tout.dim; i++) // Expands a small matrix to a bigger dimension with a full 0's columns 
+			newMat[i] = cast(newMat.VCol) newMat.VCol.ZERO;
+		
+		return newMat;
+	}
+	
+	/**
 	* Returns a visual representation of this matrix
 	*/
 	string toString() const {
@@ -505,4 +563,23 @@ if (is(T == real) || is(T == double) || is(T == float)
 		}
 		return ret;
 	}
+}
+
+/**
+* Say if a thing it's a Matrix
+*/
+template isMatrix(T)	{
+	//immutable bool isMatrix = is(T == Matrix);
+  immutable bool isMatrix = __traits(compiles,
+        (){  
+            T t;
+            static assert(T.dim >= 2 && T.dim <= 4);
+            auto cell = t.cell;
+            auto cell00 = t[0,0];
+            auto col0 = t[0];
+            auto coln = t[T.dim];
+            
+            // TODO : Should test for methods ?
+        }
+    );
 }
