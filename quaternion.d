@@ -103,15 +103,34 @@ unittest{
 	
 	writeln("Rotating a Vector with a Quaternion : OK");
 	
-	auto m = q_bank.toMatrix!(Mat4d)();
-	// TODO Check this matrix and others
+	// Generation of Rotation matrix
+	auto m = cast(Mat4d) q_bank;
+	assert (approxEqual(m.determinant , 1) );
+	assert (m.equal( Mat4d([1, 0, 0, 0,
+										 			0, 0,-1, 0,
+												  0, 1, 0, 0,
+													0, 0, 0, 1]) ));
 	
-	writeln("To rotaton Matrix : OK");
+	m = cast(Mat4d) q_head;
+	assert (approxEqual(m.determinant , 1) );
+	assert (m.equal( Mat4d([0.707107, 0, 0.707107, 0,
+										 			0, 				1, 0,				 0,
+												 -0.707107,	0, 0.707107, 0,
+													0,			  0, 0,				 1]) ));
+	
+	m = cast(Mat4d) q_elev;
+	assert (approxEqual(m.determinant , 1) );
+	assert (m.equal( Mat4d([0.707107, 0.707107, 0, 0,
+										 		 -0.707107, 0.707107, 0, 0,
+													0				,	0			 	, 1, 0,
+													0				, 0				, 0, 1]) ));
+	
+	writeln("Casting to Matrix : OK");
 	
 	// check conversion between Quaternions
-	auto qf = toImpl!(Qua_f, Qua_d) (q1);
-	auto qreal = toImpl!(Qua_r, Qua_d) (q1);
-	auto qd = toImpl!(Qua_d, Qua_f) (qf);
+	auto qf = cast(Qua_f) q1;
+	auto qreal = cast(Qua_r) q1;
+	auto qd = cast(Qua_d) qf;
 	
 	assert(is(typeof(qf) == Qua_f));
 	assert(is(typeof(qreal) == Qua_r));
@@ -121,7 +140,7 @@ unittest{
 		assert( qreal[i] == 1);
 		assert( qd[i] == 1);
 	}	
-	writeln("Conversion between Quaternions : OK");
+	writeln("Quaternion Casting : OK");
 	
 	writeln();
 }
@@ -466,6 +485,7 @@ if (is(T == real) || is(T == double) || is(T == float) )
 		return Vector!(T, 3)(head,elev,bank);
 	}
 
+	/+
 	/**
 	* Returns a Matrix that represents the rotation stored in a quaternion
 	* Returns :
@@ -491,6 +511,47 @@ if (is(T == real) || is(T == double) || is(T == float) )
 				 				0.0L						, 0.0L						, 0.0L									 , 1.0L]);
 		} else {
 			return U([ 1.0L - 2.0L * (y2 +z2), 2.0L * (xy - wz)	, 2.0L * (xz + wy),
+				 				 2.0L * (xy + wz), 1.0L - 2.0L * (x2 + z2), 2.0L * (yz - wx),
+				 				 2.0L * (xz - wy), 2.0L * (yz + wx), 1.0L - 2.0L * (x2 + y2)]);
+		}
+	}+/
+
+	/**
+	* Casting for convert between Quaternions
+	*/
+	Tout opCast( Tout ) () 
+	if (isQuaternion!(Tout)) {
+		static assert (isQuaternion!Tout, "This type not is a Quaternion"); // Ok, redundant
+		
+		Tout newQ;
+		static if (is (typeof(newQ.x) == typeof(this.x)))  {
+			foreach (i ,s ;coor)
+				newQ.coor[i] =  s;
+		} else {
+			foreach (i ,s ;coor)
+				newQ.coor[i] =  to!(typeof(newQ.x))(s); 
+		}
+		
+		return newQ;
+	}
+	
+	/**
+	* Casting for make rotation Matrix
+	*/
+	Tout opCast( Tout ) () 
+	if (isMatrix!(Tout) && Tout.dim >= 3) {
+		
+		auto x2 = x*x;	auto y2 = y*y;	auto z2 = z*z;
+		auto xy = x*y;	auto xz = x*z;	auto yz = y*z;
+		auto wx = w*x;	auto wy = w*y;	auto wz = w*z;
+		
+		static if (Tout.dim == 4) {
+			return Tout([ 1.0L - 2.0L * (y2 +z2), 2.0L * (xy - wz), 2.0L * (xz + wy), 0.0L,
+				 				2.0L * (xy + wz), 1.0L - 2.0L * (x2 + z2), 2.0L * (yz - wx), 0.0L,
+				 				2.0L * (xz - wy), 2.0L * (yz + wx), 1.0L - 2.0L * (x2 + y2), 0.0L,
+				 				0.0L						, 0.0L						, 0.0L									 , 1.0L]);
+		} else {
+			return Tout([ 1.0L - 2.0L * (y2 +z2), 2.0L * (xy - wz)	, 2.0L * (xz + wy),
 				 				 2.0L * (xy + wz), 1.0L - 2.0L * (x2 + z2), 2.0L * (yz - wx),
 				 				 2.0L * (xz - wy), 2.0L * (yz + wx), 1.0L - 2.0L * (x2 + y2)]);
 		}
@@ -527,6 +588,7 @@ template isQuaternion(T)
     );
 }
 
+/+
 /**
 * to converto a Quaternion to other Quaternion
 */
@@ -545,4 +607,4 @@ if (!implicitlyConverts!(S, T) && isQuaternion!T && isQuaternion!S )
 		}
 		
 		return newQ;
-}
+}+/

@@ -135,6 +135,14 @@ unittest {
 	assert(c3 != d3);
 	writeln("Multiplication : OK");
 	
+	auto vec = ide.VCol(1,2 ,3 ,4);
+	auto vecl = vec * ide;
+	auto vecr = ide * vec;
+	assert (vec == vecl);
+	assert (vec == vecr);
+	
+	writeln("Matrix x Vector : OK");
+	
 	// Check Matrix transposition
 	auto ide_t = ide.transposed();
 	assert (ide == ide_t);
@@ -252,7 +260,7 @@ if (is(T == real) || is(T == double) || is(T == float)
 	/**
 	* Returns j column vector
 	*/
-	VCol opIndex(size_t j) const { return col[j];}
+	ref VCol opIndex(size_t j) const { return col[j];}
 	
 	/**
 	* Assigns a new column vector
@@ -396,17 +404,73 @@ if (is(T == real) || is(T == double) || is(T == float)
 	Matrix opBinary(string op) (ref const Matrix rhs) const
 		if (op == "*" )
 	{
-		Matrix mat = Matrix.ZERO;
-		foreach (size_t i; 0..dim) { // Runs along result rows 
-			foreach (size_t j; 0..dim) { // Runs along result columns
+		Matrix mat;/+ = Matrix.ZERO;
+		
+		// naive method
+		foreach (size_t j; 0..dim) { // Runs along result columns
+			foreach (size_t i; 0..dim) { // Runs along result rows
 				foreach (size_t u; 0..dim) { // Calcs result cell matrix value
 					// value += Aiu * Buj
-					mat[i,j] = mat[i,j] + this.cell[i +offset(u)] * rhs.cell[u +offset(j)] ;
-					//mat[i,j] = mat[i,j] + this[i,u] * rhs[u,j] ;
+					mat[i,j] = mat[i,j] + this[i,u] * rhs[u,j] ; 
 				}
 			}
 		}
+		+/
+		
+		// direct method
+		foreach (size_t j; 0..dim) { // Runs along result columns
+			foreach (size_t i; 0..dim) { // Runs along result rows
+				static if (dim == 2) {
+					mat[i, j] = this[i,0] * rhs[0,j] + this[i,1] * rhs[1,j] ;
+				} else if (dim == 3) {
+					mat[i, j] = this[i,0] * rhs[0,j] + this[i,1] * rhs[1,j] + this[i,2] * rhs[2,j] ;
+				} else if (dim == 4) {
+					mat[i, j] = this[i,0] * rhs[0,j] + this[i,1] * rhs[1,j] + this[i,2] * rhs[2,j] + this[i,3] * rhs[3,j] ;
+				}
+			}
+		}
+		
 		return mat;
+	}
+	
+	/**
+	* Define Matrix x Vector
+	*/
+	VCol opBinary(string op) (ref const VCol rhs) const
+		if (op == "*" )
+	{
+		static assert (rhs.dim == dim, "The vector dimension must be smae that Matrix dimmension");
+		VCol ret;
+		foreach (size_t j; 0..dim) { // Runs along result coords	
+			static if (dim == 2) {
+				ret[j] = this[j,0] * rhs[0] + this[j,1] * rhs[1] ;
+			} else if (dim == 3) {
+				ret[j] = this[j,0] * rhs[0] + this[j,1] * rhs[1] + this[j,2] * rhs[2] ;
+			} else if (dim == 4) {
+				ret[j] = this[j,0] * rhs[0] + this[j,1] * rhs[1] + this[j,2] * rhs[2] + this[j,3] * rhs[3] ;
+			}
+		}
+		return ret;
+	}
+	
+	/**
+	* Define Vector x Matrix
+	*/
+	VCol opBinaryRight(string op) (ref const VCol lhs) const
+		if (op == "*" )
+	{
+		static assert (lhs.dim == dim, "The vector dimension must be smae that Matrix dimmension");
+		VCol ret;
+		foreach (size_t j; 0..dim) { // Runs along result coords	
+			static if (dim == 2) {
+				ret[j] = this[0,j] * lhs[0] + this[1,j] * lhs[1] ;
+			} else if (dim == 3) {
+				ret[j] = this[0,j] * lhs[0] + this[1,j] * lhs[1] + this[2,j] * lhs[2] ;
+			} else if (dim == 4) {
+				ret[j] = this[0,j] * lhs[0] + this[1,j] * lhs[1] + this[2,j] * lhs[2] + this[3,j] * lhs[3] ;
+			}
+		}
+		return ret;
 	}
 	
 	/**
