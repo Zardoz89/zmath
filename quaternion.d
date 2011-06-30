@@ -1,5 +1,11 @@
 /**
-* Module that defines a Quaternion
+A Quaternion it's used to store a space orientation / rotation, and makes easy 
+to interpolate rotations, at same time that avoid grimbal locks that have using
+Euler angles
+
+License: $(LINK2 http://www.gnu.org/licenses/lgpl.txt, LGPL 3).
+
+Authors: Luis Panadero Guardeño $(LINK http://zardoz.es)
 */
 module zmath.quaternion;
 

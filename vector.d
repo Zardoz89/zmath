@@ -1,9 +1,11 @@
 /**
-* Module that defines a N-Dimensional Vector where N = 2, 3 or 4
+Defines a Vector of float point typefrom 2 to 4 dimension
+
+License: $(LINK2 http://www.gnu.org/licenses/lgpl.txt, LGPL 3).
+
+Authors: Luis Panadero Guardeño $(LINK http://zardoz.es)
 */
 module zmath.vector;
-
-import zmath.aux;
 
 import std.math;
 import std.conv;

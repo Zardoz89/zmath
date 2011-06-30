@@ -1,13 +1,15 @@
 /**
-* Module that defines a squared Matrix compatible with OpenGL
+Defines a squared Matrix with column-major ordering from 2x2 to 4x4 size
+ 
+License: $(LINK2 http://www.gnu.org/licenses/lgpl.txt, LGPL 3).
+
+Authors: Luis Panadero Guardeño $(LINK http://zardoz.es)
 */
 module zmath.matrix;
 
-import zmath.aux;
 import zmath.vector;
 
 import std.math;
-import std.parallelism;
 import std.conv;
 
 version (unittest) {
