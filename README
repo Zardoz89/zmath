@@ -1,0 +1,6 @@
+zmath it's a small quick made lib for Vectors, Matrix and Quaternions maths made over standard float point types and in language D 2.
+I made it on the way of self-learning D, but I think that could be usefull, so I open the source code.
+
+The main objetive it's be usefull for doing basic things with 2d / 3d job and using ir with OpenGL (Matrix it's column-major ordered in a single array)
+
+
