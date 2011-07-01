@@ -65,6 +65,9 @@ unittest {
 	// Check Column assignation
 	auto tcol = ide;
 	auto v = cast(tcol.VCol) Vec3f(1, 2 ,3 );
+	auto v2 = Vec4r(-1, -2 ,-3 ,-4);
+	writeln (typeid(v2), " ", typeid(v) );
+	//tcol[1] = v2;
 	tcol[2] = v;
 	assert (tcol[2] == v);
 	writeln("Column vector assignation : OK");
@@ -224,7 +227,7 @@ if (is(T == real) || is(T == double) || is(T == float)
 	static enum size_t dim = dim_; 			/// Matrix Dimension
 	static enum size_t cells = dim*dim; 	/// Matrix number of cells
 	
-	alias Vector!(T,dim_) VCol;
+	alias Vector!(T,dim) VCol;
 	
 	union {
 		private T cell[cells]; 					/// Matrix like of a array of cells of major-column

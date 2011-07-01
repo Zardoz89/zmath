@@ -184,14 +184,14 @@ if (is(T == real) || is(T == double) || is(T == float) )
 	
 	/**
 	* Build a new Quaternion from a set of initial values
-	* If no there values for z and w, will be set to 0
+	* If no there values will be set to 0,0,0,1
 	* Params:
 	*	i = i imaginary component
 	*	j = j imaginary component
 	*	k = k imaginary component
 	*	w = i real component
 	*/
-	this(in T i, in T j, in T k = 0, in T w = 0) {
+	this(in T i=0, in T j=0, in T k = 0, in T w = 1) {
 		this.i = i;
 		this.j = j;
 		this.k = k;
@@ -216,7 +216,7 @@ if (is(T == real) || is(T == double) || is(T == float) )
 	
 	/**
 	* Build a new Quaternion from a 3D 
-	* w will be set to 0
+	* w will be set to 1
 	* Params:
 	*	v = Vector 3d 
 	*/
@@ -226,7 +226,7 @@ if (is(T == real) || is(T == double) || is(T == float) )
 			coor[i] = v[i];
 		}
 		for (;i< dim; i++) {
-			coor[i] = 0;
+			coor[i] = 1;
 		}
 	}
 	
