@@ -63,13 +63,14 @@ unittest {
 	writeln("isOk and isFinite : OK");
 	
 	// Check Column assignation
-	auto tcol = ide;
-	auto v = cast(tcol.VCol) Vec3f(1, 2 ,3 );
-	auto v2 = Vec4r(-1, -2 ,-3 ,-4);
-	writeln (typeid(v2), " ", typeid(v) );
-	//tcol[1] = v2;
+	auto tcol = Mat3r.IDENTITY;
+	auto v = Vec3f(1, 2 ,3 );
+	auto v2 = Vec2r(-1, -2 );
+	tcol[1] = v2;
 	tcol[2] = v;
-	assert (tcol[2] == v);
+	
+	assert (cast(Vec3f) tcol[2] == v);
+	//writeln(tcol);
 	writeln("Column vector assignation : OK");
 	
 	// Check + - unary operators
@@ -258,7 +259,8 @@ if (is(T == real) || is(T == double) || is(T == float)
 	/**
 	* Assigns a new cell value
 	*/
-	void opIndexAssign(T c, size_t row, size_t cl) {
+	void opIndexAssign(K)(K c, size_t row, size_t cl) 
+	if (is (K : real))	{
 		col[cl][row] = c;
 	}
 	
@@ -270,13 +272,14 @@ if (is(T == real) || is(T == double) || is(T == float)
 	/**
 	* Assigns a new column vector
 	*/
-	void opIndexAssign(VCol v, size_t j) {
-		//static assert (v.dim <= dim, "Vector have a bigger dimension that this maxtrix.");
-		//static if (v.dim != dim) {
-		//	col[j] = cast(VCol) v;
-		//} else {
+	void opIndexAssign(K) (K v, size_t j) 
+	if (isVector!(K))	{
+		static assert (v.dim <= dim, "Vector has a bigger dimension that this maxtrix.");
+		static if (!is (K == VCol)) {
+			col[j] = cast(VCol) v;
+		} else {
 			col[j] = v;
-		//}
+		}
 	}
 	
 	/**
