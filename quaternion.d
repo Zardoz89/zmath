@@ -176,9 +176,9 @@ if (is(T == real) || is(T == double) || is(T == float) )
 		}
 		
 		struct {
-			T x;						/// 1 complex component
-			T y;						/// j complex component
-			T z;						/// k complex component
+			T x;						/// alias of i component
+			T y;						/// alias of j component
+			T z;						/// alias of k component
 		}
 	}
 	

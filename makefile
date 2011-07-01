@@ -99,8 +99,8 @@ $(DOC_DIR)/vector.html : vector.d
 $(DOC_DIR)/matrix.html : vector.d matrix.d
 	$(DDOC) $(DDOCFLAGS) -Df$@ $^ -I$(SRC_DIR)
 
-$(DOC_DIR)/quaternion.html : vector.d quaternion.d
-	$(DDOC) $(DDOCFLAGS) -Df$@ $< -I$(SRC_DIR)
+$(DOC_DIR)/quaternion.html : vector.d matrix.d quaternion.d
+	$(DDOC) $(DDOCFLAGS) -Df$@ $^ -I$(SRC_DIR)
 
 ########################################################
 #make clean your home!
