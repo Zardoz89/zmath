@@ -10,144 +10,6 @@ module zmath.vector;
 import std.math;
 import std.conv;
 
-version(unittest) {
-	import std.stdio;
-}
-
-unittest {
-	writeln("Unit test of Vector :");
-	Vec2r v1 = Vec2r(0,2);
-	auto v2 = Vec2r(2,0);
-	auto v3 = Vec2r(1,1);
-	
-	assert (isVector!(typeof(v1))); // Yep it's a Vector
-	
-	assert (v2.x == 2);
-	assert (v2.coor[0] == 2);
-	assert (v2[0] == 2);
-	
-	// Check equality
-	assert (v2 != v3);
-	assert (v3 == v3);
-	assert (v3.equal(v3));
-	writeln("Equality Operator : OK");
-	
-	// Check change of sign
-	auto nv3 = -v3;
-	assert (nv3.x == -1);
-	assert (nv3.y == -1);
-	writeln("Change of sign : OK");
-	
-	// Check addition
-	auto v12 = v1 + v2;
-	auto v21 = v2 + v1;
-
-	// Symetry
-	assert(v12 == v21);
-	// Value
-	assert(v12.x == 2.0L);
-	assert(v12.y == 2.0L);
-	writeln("Addition : OK");
-	
-	// Check subtraction
-	auto v1m3 = v1 - v3;
-	assert(v1m3.x == -1.0L);
-	assert(v1m3.y == 1.0L);
-	// Subtraction asimetry
-	auto v3m1 = v3 - v1;
-	assert(v3m1.x == 1.0L);
-	assert(v3m1.y == -1.0L);
-	writeln("Subtraction : OK");
-	
-	// Product by Scalar
-	auto v2ten = v2 *10.0L;
-	assert(v2ten.x == (10.0L * v2.x));
-	assert(v2ten.y == (10.0L * v2.y));
-	v2ten = v2ten * (1/2.0L);
-	assert(v2ten.x == (5.0L * v2.x));
-	assert(v2ten.y == (5.0L * v2.y));
-	writeln("Product by scalar : OK");
-	
-	
-	// Dot Product and length
-	auto v2dotv1 = v2 * v1;
-	assert(v2dotv1 == 0.0L);
-	assert(v2ten.length == 10.0L);
-	assert(v2ten.sq_length == 100.0L);
-	writeln("Dot Product and length : OK");
-	
-	// Test Distance
-	auto dis = v1.distance(v2);
-	assert (dis == 2* SQRT2 );
-	writeln("Distance : OK");
-	
-	// Unitary Vector
-	auto uv2ten = v2ten; 
-	uv2ten.normalize();
-	auto uv2 =  v2;
-	uv2.normalize();
-	assert (uv2 == uv2ten);
-	assert (uv2.x == 1.0L);
-	assert (uv2.y == 0.0L);
-	assert (v2ten.x != 1.0L);
-	assert (v2ten.y == 0.0L);
-	assert (!v2ten.isUnit());
-	assert (uv2ten.isUnit());
-	writeln("Unitary Vector : OK");
-	
-	// Cross product
-	auto r3v1 = Vec3r(0,0,10);
-	auto r3v2 = Vec3r(2,0,2);
-	auto cross0 = r3v1 & r3v1;
-	auto cross12 = r3v1 & r3v2;
-	auto cross21 = r3v2 & r3v1;
-	
-	assert (cross0.length == 0);
-	assert (cross12.length == 20.0);
-	assert (cross21.length == 20.0);
-	
-	assert (cross12 == Vec3r(0,20.0L, 0));
-	assert (cross21 == Vec3r(0,-20.0L, 0));
-	writeln("Cross Product : OK");
-	
-	// Check Rotation in R2
-	auto rot90 = v2.rotate(PI_2);
-	auto rotn90 = v2.rotate(-PI_2);
-	assert (rot90.length == v2.length);
-	assert (rotn90.length == v2.length);
-	assert (rot90.equal(Vec2r(0,2)));
-	assert (rotn90.equal(Vec2r(0,-2)));
-	writeln("Rotation in R2 : OK");
-	
-	// Check proyection
-	auto proy_v3_in_v2 = v3.projectOnTo(v2);
-	assert (proy_v3_in_v2 == Vec2r.X_AXIS );
-	writeln("Proyection of a Vector : OK");
-	
-	// Check isOk() and isFinite()
-	assert(r3v1.isOk());
-	assert(r3v1.isFinite());
-	Vec4r nain;
-	assert(! nain.isOk());
-	assert(! nain.isFinite());
-	writeln("isOk() and isFinite() : OK");
-	
-	// Check casting
-	auto v2f = cast(Vec2f) v2;
-	auto v2d = cast(Vec2d) v2;
-	auto vecf = Vec2f(1,1);
-	//auto vec4d = toImpl!(Vec4d, Vec2f) (vecf);
-	//auto vec4d = to!Vec4d (vecf);
-	auto vec4d = cast(Vec4d) vecf;
-	assert(is(typeof(v2f) == Vec2f));
-	assert(is(typeof(v2d) == Vec2d));
-	assert(is(typeof(vec4d) == Vec4d));
-	
-	writeln("Vector Casting : OK");
-	
-	writeln();
-}
-
 alias Vector!(real,2) Vec2r; /// Alias of a 2d Vector with reals
 alias Vector!(real,3) Vec3r; /// Alias of a 3d Vector with reals
 alias Vector!(real,4) Vec4r; /// Alias of a 4d Vector with reals
@@ -247,6 +109,17 @@ if (__traits(isFloating, T) ) {
 		coor = coor.dup;
 	}+/
 	
+	unittest {
+		Vec2r v1 = Vec2r(0,2);
+		auto v2 = Vec2r(2,0);
+		auto v3 = Vec2r([1,1]);
+		assert (v3 == Vec2r(1,1));
+		
+		assert (v2.x == 2); 			// By Coordinate name
+		assert (v2.coor[0] == 2);	// By direct access to array (only internal use)
+		assert (v2[0] == 2);			// By opIndex
+	}
+	
 	// Basic Properties ***************************************	
 	
 	/**
@@ -275,6 +148,13 @@ if (__traits(isFloating, T) ) {
 		return this * this;
 	}
 	
+	unittest {
+		auto v = Vec3f(10,0,0);
+		auto v2 = Vec4d(1,1,1,1);
+		assert (v.length == 10.0);
+		assert (v2.sq_length == 4.0);
+	}
+	
 	// Operations ***************************************	
 	
 	/**
@@ -291,6 +171,14 @@ if (__traits(isFloating, T) ) {
 		static if (dim == 4) 
 			if (w != rhs.w) return false;
 		return true;	
+	}
+	
+	unittest {
+		// Check change of sign
+		auto v = Vec2r([1,1]);
+		auto n = -v;
+		assert (n.x == -1);
+		assert (n.y == -1);
 	}
 	
 	
@@ -354,6 +242,15 @@ if (__traits(isFloating, T) ) {
 			return Vector( mixin(op~"x"), mixin(op~"y"), mixin(op~"z"), mixin(op~"w"));
 	}
 	
+	unittest {
+		// Check equality
+		auto v =  Vec4f(4, 2, 1, 0);
+		auto v2 = Vec4f(4, 2, 3, 1);
+		assert (v2 != v);
+		assert (v == v);
+		assert (v.equal(v));
+		assert (! v.equal(v2));
+	}
 	
 	/**
 	* Define binary operator + and -
@@ -367,6 +264,26 @@ if (__traits(isFloating, T) ) {
 			return Vector( mixin("x"~op~"rhs.x"), mixin("y"~op~"rhs.y"), mixin("z"~op~"rhs.z"));	
 		static if (dim == 4) 
 			return Vector( mixin("x"~op~"rhs.x"), mixin("y"~op~"rhs.y"), mixin("z"~op~"rhs.z"), mixin("w"~op~"rhs.w"));
+	}
+	
+	unittest {
+		// Check addition
+		auto v1 = Vec4d(1,2,3,4);
+		auto v2 = Vec4d(1,1,1,1);
+		auto v12 = v1 + v2;
+		auto v21 = v2 + v1;
+		
+		// Symetry
+		assert(v12 == v21);
+		// Value
+		assert(v12 == Vec4d(2,3,4,5));
+		
+		// Check subtraction
+		auto v1m2 = v1 - v2;
+		assert(v1m2 == Vec4d(0,1,2,3));
+		// Subtraction asimetry
+		auto v2m1 = v2 - v1;
+		assert(v2m1 == Vec4d(0,-1,-2,-3));
 	}
 	
 	/**
@@ -383,6 +300,13 @@ if (__traits(isFloating, T) ) {
 			return Vector(x *rhs, y *rhs, z *rhs, w *rhs);
 	}
 	
+	unittest {
+		// Product by Scalar
+		auto vten = Vec4r(0,1,2,3) *10.0L;
+		assert(vten == Vec4r(0,10,20,30));
+		vten = vten * (1/2.0L);
+		assert(vten == Vec4r(0,5,10,15));		
+	}
 	
 	/**
 	* Define Dot Product
@@ -397,6 +321,17 @@ if (__traits(isFloating, T) ) {
 		return tmp;
 	}
 	
+	unittest {
+		// Dot Product and length
+		auto v1 = Vec4f(10,0,0,0);
+		auto v2 = Vec4f(1,1,1,0);
+		auto v2dotv1 = v2 * v1;
+		assert(v2dotv1 == 10.0);
+		v1 = Vec4f(10,0,0,0);
+		v2 = Vec4f(0,1,1,0);
+		v2dotv1 = v2 * v1;
+		assert(v2dotv1 == 0.0);
+	}
 	
 	/**
 	* Define Cross Product for R3 (operation c = a & b )
@@ -407,6 +342,22 @@ if (__traits(isFloating, T) ) {
 		return Vector( coor[1]*rhs.coor[2] - coor[2]*rhs.coor[1],
 			 						 coor[2]*rhs.coor[0] - coor[0]*rhs.coor[2],
 			 						 coor[0]*rhs.coor[1] - coor[1]*rhs.coor[0]);
+	}
+	
+	unittest {
+		// Cross product
+		auto r3v1 = Vec3r(0,0,10);
+		auto r3v2 = Vec3r(2,0,2);
+		auto cross0 = r3v1 & r3v1;
+		auto cross12 = r3v1 & r3v2;
+		auto cross21 = r3v2 & r3v1;
+		
+		assert (cross0.length == 0);
+		assert (cross12.length == 20.0);
+		assert (cross21.length == 20.0);
+		
+		assert (cross12 == Vec3r(0,20.0L, 0));
+		assert (cross21 == Vec3r(0,-20.0L, 0));
 	}
 	
 	/**
@@ -442,12 +393,25 @@ if (__traits(isFloating, T) ) {
 		return ret;
 	}
 	
+	unittest {
+		// Unitary Vector
+		auto v = Vec4f(10,10,10,10);
+		Vec4f uv = v; 
+		uv.normalize();
+		auto uv2 =  Vec4f(3,3,3,3);
+		uv2.normalize();
+		assert (uv == uv2);
+		assert (uv == Vec4f(.5,.5,.5,.5));
+		assert (!v.isUnit());
+		assert (uv.isUnit());
+	}
+	
 	/**
-	* Obtains the proyection two vectors
+	* Obtains the projection two vectors
 	* Params:
-	*	a = Vector to proyect
-	* b = Vector where proyect vector a
-	* Returns : A Vector that it's proyection of Vector a over Vector b
+	*	a = Vector to project
+	* b = Vector where project vector a
+	* Returns : A Vector that it's projection of Vector a over Vector b
 	*/
 	static Vector projectOnTo (Vector a,Vector b) {
 		b.normalize();
@@ -458,13 +422,21 @@ if (__traits(isFloating, T) ) {
 	}
 	
 	/**
-	* Obtains the proyection of this vector over other vector
+	* Obtains the projection of this vector over other vector
 	* Params:
-	* b = Vector where proyect this vector
-	* Returns : A Vector that it's proyection of this Vector over Vector b
+	* b = Vector where project this vector
+	* Returns : A Vector that it's projection of this Vector over Vector b
 	*/
 	Vector projectOnTo(Vector b) {
 		return this.projectOnTo(this,b);
+	}
+	
+	unittest {
+		// Check projection
+		auto b = Vec3f.X_AXIS;
+		auto a = Vec3f(1,20,-30);
+		auto proy = a.projectOnTo(b);
+		assert (proy == Vec3f.X_AXIS );
 	}
 	
 	/**
@@ -489,6 +461,16 @@ if (__traits(isFloating, T) ) {
 		return d.sq_length;
 	}
 	
+	unittest {
+		// Test Distance
+		auto v1 = Vec4d(1,1,1,1);
+		auto v2 = Vec4d(-1,-1,-1,-1);
+		auto dis = v1.distance(v2);
+		auto dis_sq = v1.sq_distance(v2);
+		assert (dis == 4 );
+		assert (dis_sq == 16 );
+	}
+	
 	/**
 	* Rotation in R2
 	* Params:
@@ -500,13 +482,24 @@ if (__traits(isFloating, T) ) {
 		return Vector( x * cos(angle) - y * sin(angle), x * sin(angle) + y *cos(angle) );
 	}
 	
+	unittest {
+		// Check Rotation in R2
+		auto v = Vec2f(10,0);
+		auto rot90 = v.rotate(PI_2);
+		auto rotn90 = v.rotate(-PI_2);
+		assert (rot90.length == v.length);
+		assert (rotn90.length == v.length);
+		assert (rot90.equal(Vec2f(0,10)));
+		assert (rotn90.equal(Vec2f(0,-10)));
+	}
+	
 	// Misc ***************************************************************************
 	
 	/**
 	* Checks that the vector not have a weird NaN value
 	* Returns : True if this vector not have a NaN value
 	*/
-	bool isOk() {
+	@property bool isOk() {
 		if (isNaN(x) ==0 || isNaN(y) ==0) return true;
 		static if (dim >= 3)
 			if (isNaN(z) ==0) return true;
@@ -519,13 +512,29 @@ if (__traits(isFloating, T) ) {
 	* Checks that the vector have finite values
 	* Returns : True if this vector have finite values (not infinite value or NaNs)
 	*/
-	bool isFinite() {
-		if (std.math.isFinite(x) && std.math.isFinite(y)) return true;
-		static if (dim >= 3)
-			if (std.math.isFinite(z)) return true;
-		static if (dim >= 4)
-			if (std.math.isFinite(w)) return true;	
-		return false;	
+	@property bool isFinite() {
+		if (std.math.isFinite(x) && std.math.isFinite(y)) {
+			static if (dim >= 3)
+				if (! std.math.isFinite(z)) return false;
+			static if (dim >= 4)
+				if (! std.math.isFinite(w)) return false;	
+			return true;	
+		} else {
+			return false;
+		}
+	}
+	
+	unittest {
+		// Check isOk() and isFinite()
+		Vec4d vNaN;
+		assert(!vNaN.isOk);
+		assert(!vNaN.isFinite);
+		Vec4d vOK = Vec4d(1,2,3,4);
+		assert(vOK.isOk);
+		assert(vOK.isFinite);
+		Vec4d vInf = Vec4d(1.0 /0.0, 10, 0, 1);
+		assert (!vInf.isFinite);
+		assert (vInf.isOk);
 	}
 	
 	/**
@@ -564,6 +573,20 @@ if (__traits(isFloating, T) ) {
 		return ret;		
 	}
 	
+	unittest {
+		// Check casting
+		auto v2 = Vec2r(10,-10);
+		auto v2f = cast(Vec2f) v2;
+		auto v2d = cast(Vec2d) v2;
+		auto vecf = Vec2f(10,10);
+		//auto vec4d = toImpl!(Vec4d, Vec2f) (vecf);
+		//auto vec4d = to!Vec4d (vecf); // Not yet
+		auto vec4d = cast(Vec4d) vecf;
+		assert(is(typeof(v2f) == Vec2f));
+		assert(is(typeof(v2d) == Vec2d));
+		assert(is(typeof(vec4d) == Vec4d));
+	}
+	
 }
 
 /**
@@ -586,6 +609,12 @@ template isVector(T)
             // TODO : Should test for methods ?        
         }
     );
+}
+
+unittest {
+	auto v1 = Vec2f(5,7);
+	assert (isVector!(typeof(v1))); // Yep it's a Vector
+	assert (! isVector!(int));
 }
 
 /+
