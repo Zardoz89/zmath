@@ -40,7 +40,7 @@ DDOCFLAGS :=-c -o-
 # Set DFLAGS
 DFLAGS := -w 
 ifeq ($(BUILD),debug)
-	DFLAGS += -g -debug
+	DFLAGS += -gc -debug
 else
 	DFLAGS += -O -release
 endif
@@ -62,7 +62,7 @@ debug :
 	$(MAKE) --no-print-directory -f$(MAKEFILE) MODEL=$(MODEL) BUILD=debug
 unittest :
 	$(MAKE) --no-print-directory -f$(MAKEFILE) MODEL=$(MODEL) BUILD=debug unittest
-	$(MAKE) --no-print-directory -f$(MAKEFILE) MODEL=$(MODEL) BUILD=release unittest
+#	$(MAKE) --no-print-directory -f$(MAKEFILE) MODEL=$(MODEL) BUILD=release unittest
 
 else
 

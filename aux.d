@@ -24,7 +24,7 @@ enum M_1_180 = 1 / 180.0L; /// Inverse of 180
 if (__traits(isFloating, T)) {
 	if ( x > 1.0L) 
 		return 1.0L;
-	if ( x < 1.0L)
+	if ( x < -1.0L)
 		return -1.0L;
 	return x;	
 }
@@ -35,6 +35,8 @@ unittest {
 	assert(clamp(d) == 1.0);
 	real r = -25;
 	assert(clamp(r) == -1.0);
+	float f = -0.5;
+	assert(clamp(f) == -0.5);
 	
 	writeln("Clamp float : OK");
 }
@@ -83,7 +85,8 @@ unittest {
 * If _a are aproximated equal that _b, returns 0. Otherwise, if _a > _b, returns 1 and if _a < _b , returns -1;
 */
 int cmpFloat (T, U) ( in T a, in U b, T maxRelDiff = 1e-2, T maxAbsDiff = 1e-5 ) {
-	static assert(__traits(isFloating, T) && is(U : real) );
+	static assert(__traits(isFloating, T), "'a' must be a float point number");
+	static assert(__traits(isScalar, U), "'b' must be a number type");
 	
 	if (approxEqual(a, b, maxRelDiff, maxAbsDiff))
 		return 0;
