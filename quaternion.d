@@ -15,143 +15,6 @@ import zmath.matrix;
 import std.math;
 import std.conv;
 
-version(unittest) {
-	import std.stdio;
-}
-
-unittest{
-	writeln("Unit Test of Quaternion:");
-	
-	auto q1 = Qua_d(1,1,1,1);
-	auto qk = Qua_d(0,0,1,0);
-	auto qj = Qua_d(0,1,0,0);
-	auto qi = Qua_d(1,0,0,0);
-	
-	assert (isQuaternion!(typeof(qj)));
-	
-	// Check equality
-	assert( q1 == q1);
-	assert( q1 != qj);
-	assert( qj != q1);
-	assert( q1.equal(q1) && ! q1.equal(qk) );
-	writeln("Equality : OK");
-	
-	// Check addition / subtraction
-	auto qki = qk + qi;
-	auto q1j = q1 + qj;
-	auto q1k = q1 - qk;
-	assert (qki == Qua_d(1,0,1,0));
-	assert (q1j == Qua_d(1,2,1,1));
-	assert (q1k == Qua_d(1,1,0,1));
-	writeln("Addition /subtraction : OK");
-	
-	// Check Hamilton multiplication
-	auto q1i = q1 * qi;
-	auto qi1 = qi * q1;
-	assert(q1i == Qua_d(1,1,-1,-1)); // TODO Check this values
-	assert (qi1 == Qua_d(1,-1,1,-1));
-	writeln("Hamilton multiplication : OK");
-	
-	// Check Conjugate
-	auto conj_q1 = q1.conj();
-	assert(conj_q1 == Qua_d(-1,-1,-1,1));
-	auto qr = q1 * q1.conj();
-	assert(qr == Qua_d(0,0,0,4));
-	writeln("Conjugate : OK");
-	
-	// Check conversion from Axis/angle 
-	auto q_AxisX = Qua_d(Vec3r.X_AXIS,0);
-	assert (q_AxisX == Qua_d(0,0,0,1)); // TODO Do more checks
-	assert (q_AxisX.isUnit());
-	writeln("Conversion from Axis & angle : OK");
-	
-	// Check conversion to Axis/angle
-	double angle; 
-	auto axis = q_AxisX.toAxisAngle(angle);
-	assert(axis == Vec3d(1,0,0));
-	assert(angle == 0);
-	
-	auto q_Axis = Qua_d(Vec3r(1,2,3), PI_4);
-	axis = q_Axis.toAxisAngle(angle);
-	auto cmp = Vec3d(1,2,3);
-	cmp.normalize();
-	assert(axis.equal(cmp) );
-	assert(approxEqual(angle, PI_4));
-	writeln("Conversion to Axis/angle : OK");
-	
-	// Check conversion from/to Euler angles
-	auto q_bank = Qua_d(0,0, PI_2);
-	assert (q_bank.equal( Qua_d(0.707107, 0, 0, 0.707107) ) );
-	assert (q_bank.isUnit() );
-	assert (q_bank.toEuler().equal(Vec3d(0,0, PI_2)));
-	
-	auto q_head = Qua_d(PI_4,0, 0);
-	assert (q_head.isUnit() );
-	assert (q_head.toEuler().equal(Vec3d(PI_4,0, 0)));
-	
-	auto q_elev = Qua_d(0, -PI_4, 0);
-	assert (q_elev.isUnit() );
-	assert (q_elev.toEuler().equal(Vec3d(0, -PI_4, 0)));
-	
-	auto q_r = Qua_d(1, -PI_4, PI_4);
-	assert (q_r.isUnit() );
-	assert (q_r.toEuler().equal(Vec3d(1, -PI_4, PI_4)));
-	writeln("Conversion from/to Euler angles : OK");
-	
-	// Check rotation with quaternion
-	Vec3d v1 = Vec3d(1,1,1);
-	Vec3d v2 = q_bank.rotate(v1);
-	assert (v2.equal( Vec3d(1, -1, 1) ));
-	Vec3d v3 = q_head.rotate(v1);
-	assert (v3.equal( Vec3d(1.41421, 1, 0) ));
-	Vec3d v4 = q_elev.rotate(v1);
-	assert (v4.equal( Vec3d(1.41421, 0, 1) ));
-	
-	writeln("Rotating a Vector with a Quaternion : OK");
-	
-	// Generation of Rotation matrix
-	auto m = cast(Mat4d) q_bank;
-	assert (approxEqual(m.determinant , 1) );
-	assert (m.equal( Mat4d([1, 0, 0, 0,
-										 			0, 0,-1, 0,
-												  0, 1, 0, 0,
-													0, 0, 0, 1]) ));
-	
-	m = cast(Mat4d) q_head;
-	assert (approxEqual(m.determinant , 1) );
-	assert (m.equal( Mat4d([0.707107, 0, 0.707107, 0,
-										 			0, 				1, 0,				 0,
-												 -0.707107,	0, 0.707107, 0,
-													0,			  0, 0,				 1]) ));
-	
-	m = cast(Mat4d) q_elev;
-	assert (approxEqual(m.determinant , 1) );
-	assert (m.equal( Mat4d([0.707107, 0.707107, 0, 0,
-										 		 -0.707107, 0.707107, 0, 0,
-													0				,	0			 	, 1, 0,
-													0				, 0				, 0, 1]) ));
-	
-	writeln("Casting to Matrix : OK");
-	
-	// check conversion between Quaternions
-	auto qf = cast(Qua_f) q1;
-	auto qreal = cast(Qua_r) q1;
-	auto qd = cast(Qua_d) qf;
-	
-	assert(is(typeof(qf) == Qua_f));
-	assert(is(typeof(qreal) == Qua_r));
-	assert(is(typeof(qd) == Qua_d));
-	for (auto i=0; i< 4; i++ ) {
-		assert( qf[i] == 1);
-		assert( qreal[i] == 1);
-		assert( qd[i] == 1);
-	}	
-	writeln("Quaternion Casting : OK");
-	
-	writeln();
-}
-
-
 alias Quaternion!float	Qua_f;	/// Alias of a Quaternion with floats
 alias Quaternion!double	Qua_d;	/// Alias of a Quaternion with doubles
 alias Quaternion!real		Qua_r;	/// Alias of a Quaternion with reals
@@ -215,7 +78,7 @@ if (is(T == real) || is(T == double) || is(T == float) )
 	}
 	
 	/**
-	* Build a new Quaternion from a 3D 
+	* Build a new Quaternion from a 3D Vector
 	* w will be set to 1
 	* Params:
 	*	v = Vector 3d 
@@ -231,7 +94,7 @@ if (is(T == real) || is(T == double) || is(T == float) )
 	}
 	
 	/**
-	* Build a new Quaternion from a 4D 
+	* Build a new Quaternion from a 4D Vector
 	* Params:
 	*	v = Vector 4d
 	*/
@@ -241,6 +104,16 @@ if (is(T == real) || is(T == double) || is(T == float) )
 			coor[i] = v[i];
 		}
 	}
+	
+	unittest {
+		auto q = Qua_r(1,2,3,4);
+		assert(q.coor == [1,2,3,4]);
+		q = Qua_r([4.0,3.0,2.0,1.0]);
+		assert(q.coor == [4,3,2,1]);
+		q = Qua_r(Vec4r(1,2,3,4));
+		assert(q.coor == [1,2,3,4]);
+	}
+	
 	/**
 	* Creates a Quaternion from a 3d Vector and angle
 	*	Params:
@@ -249,13 +122,19 @@ if (is(T == real) || is(T == double) || is(T == float) )
 	*	Returns:
 	*	Quaternion that represents a rotation
 	*/
-	this( Vec3r v, in real angle) {
+	this( Vector!(T,3) v, in real angle) {
 		v.normalize();
 		auto sin_2 = sin(angle / 2.0L);
 		i = v.x * sin_2;
 		j = v.y * sin_2;
 		k = v.z * sin_2;
 		w = cos(angle /2.0L);
+	}
+	
+	unittest {
+		auto q_AxisX = Qua_d(Vec3d.X_AXIS, 0);
+		assert (q_AxisX == Qua_d(0,0,0,1)); // TODO Do more checks
+		assert (q_AxisX.isUnit());
 	}
 	
 	/**
@@ -280,6 +159,21 @@ if (is(T == real) || is(T == double) || is(T == float) )
 	  j = s1*c2*c3 + c1*s2*s3;
 	  k = c1*s2*c3 - s1*c2*s3;
 	  w = c1c2*c3 - s1s2*s3;
+	}
+	
+	unittest {
+		auto q_bank = Qua_d(0,0, PI_2);
+		assert (q_bank.equal( Qua_d(0.707107, 0, 0, 0.707107) ) );
+		assert (q_bank.isUnit() );
+		auto q_head = Qua_d(PI_4,0, 0);
+		assert (q_head.isUnit() );
+		assert (q_head.toEuler().equal(Vec3d(PI_4,0, 0)));
+		auto q_elev = Qua_d(0, -PI_4, 0);
+		assert (q_elev.isUnit() );
+		assert (q_elev.toEuler().equal(Vec3d(0, -PI_4, 0)));
+		auto q_r = Qua_d(1, -PI_4, PI_4);
+		assert (q_r.isUnit() );
+		assert (q_r.toEuler().equal(Vec3d(1, -PI_4, PI_4)));
 	}
 	
 	// Basic Properties ***************************************	
@@ -308,6 +202,13 @@ if (is(T == real) || is(T == double) || is(T == float) )
 	*/
 	@property T sq_length() const {
 		return x*x + y*y + z*z + w*w;
+	}
+	
+	unittest {
+		auto q = Qua_f(10,0,0,0);
+		assert(q.sq_length == 100);
+		q = Qua_f(1,1,1,1);
+		assert(q.length == 2);
 	}
 	
 	// Operations ***************************************	
@@ -345,6 +246,15 @@ if (is(T == real) || is(T == double) || is(T == float) )
 			return approxEqual(x, rhs.x, maxRelDiff, maxAbsDiff) && approxEqual(y, rhs.y, maxRelDiff, maxAbsDiff) && approxEqual(z, rhs.z, maxRelDiff, maxAbsDiff) && approxEqual(w, rhs.w, maxRelDiff, maxAbsDiff);
 	}
 	
+	unittest {
+		auto q1 = Qua_d(1,2,3,4);
+		auto qj = Qua_d(0,1,0,0);
+		assert( q1 == q1);
+		assert( q1 != qj);
+		assert( qj != q1);
+		assert( q1.equal(q1) && ! q1.equal(qj) );
+	}
+	
 	/**
 	* Define unary operators + and -
 	*/
@@ -362,6 +272,20 @@ if (is(T == real) || is(T == double) || is(T == float) )
 		if (op == "+" || op == "-")
 	{
 			return Quaternion( mixin("x"~op~"rhs.x"), mixin("y"~op~"rhs.y"), mixin("z"~op~"rhs.z"), mixin("w"~op~"rhs.w"));
+	}
+	
+	unittest {
+		// Check addition / subtraction
+		auto qk = Qua_d(0,0,1,0);
+		auto qj = Qua_d(0,1,0,0);
+		auto qi = Qua_d(1,0,0,0);
+		auto q1 = Qua_d(1,1,1,1);
+		auto qki = qk + qi;
+		auto q1j = q1 + qj;
+		auto q1k = q1 - qk;
+		assert (qki == Qua_d(1,0,1,0));
+		assert (q1j == Qua_d(1,2,1,1));
+		assert (q1k == Qua_d(1,1,0,1));
 	}
 	
 	/**
@@ -391,6 +315,16 @@ if (is(T == real) || is(T == double) || is(T == float) )
 	return Quaternion(_i, _j ,_k, _w);
 	}
 	
+	unittest {
+		// Check Hamilton multiplication
+		auto qi = Qua_d(1,0,0,0);
+		auto q1 = Qua_d(1,1,1,1);
+		auto q1i = q1 * qi;
+		auto qi1 = qi * q1;
+		assert(q1i == Qua_d(1,1,-1,-1)); // TODO Check this values
+		assert (qi1 == Qua_d(1,-1,1,-1));
+	}
+	
 	/**
 	* Obtain conjugate of a Quaternion
 	* Params:
@@ -400,6 +334,14 @@ if (is(T == real) || is(T == double) || is(T == float) )
 	*/
 	Quaternion conj () const {
 		return Quaternion(- x, -y, -z, w);
+	}
+	
+	unittest {
+		auto q1 = Qua_d(1,1,1,1);
+		auto conj_q1 = q1.conj();
+		assert(conj_q1 == Qua_d(-1,-1,-1,1));
+		auto qr = q1 * q1.conj();
+		assert(qr == Qua_d(0,0,0,4));
 	}
 	
 	/**
@@ -422,6 +364,13 @@ if (is(T == real) || is(T == double) || is(T == float) )
 		}
 	}
 	
+	unittest {
+		auto q = Qua_r(10,10,1,5);
+		assert(! q.isUnit);
+		q.normalize();
+		assert(q.isUnit);
+	}
+	
 	/**
 	* Apply a rotation Quaternion over a 3d Vector
 	*/
@@ -436,6 +385,20 @@ if (is(T == real) || is(T == double) || is(T == float) )
 		resQua = this * resQua;
 		
 		return Vector!(T, 3)( resQua.x, resQua.y, resQua.z ); 
+	}
+	
+	unittest {
+		// Check rotation with quaternion
+		auto q_bank = Qua_d(0,0, PI_2);
+		auto q_head = Qua_d(PI_4,0, 0);
+		auto q_elev = Qua_d(0, -PI_4, 0);
+		Vec3d v1 = Vec3d(1,1,1);
+		Vec3d v2 = q_bank.rotate(v1);
+		assert (v2.equal( Vec3d(1, -1, 1) ));
+		Vec3d v3 = q_head.rotate(v1);
+		assert (v3.equal( Vec3d(1.41421, 1, 0) ));
+		Vec3d v4 = q_elev.rotate(v1);
+		assert (v4.equal( Vec3d(1.41421, 0, 1) ));
 	}
 	
 	// Misc ***************************************	
@@ -458,7 +421,16 @@ if (is(T == real) || is(T == double) || is(T == float) )
 		auto inv_qw = 1/ sqrt(1 - w*w);
 		return Vector!(T, 3)(i*inv_qw, j*inv_qw, k*inv_qw );
 	}
-
+	
+	unittest {
+		// Check conversion to Axis/angle
+		auto q_head = Qua_d(PI_4,0, 0);
+		double angle; 
+		auto axis = q_head.toAxisAngle(angle);
+		assert(axis.equal(Vec3d(0,1,0)) );
+		assert(approxEqual(angle, PI_4));
+	}
+	
 	/**
 	* Returns a Vector with x = Heading, y= Elevation and z = Bank
 	*	Params:
@@ -488,9 +460,16 @@ if (is(T == real) || is(T == double) || is(T == float) )
 			bank = atan2(2* x* w - 2* y* z , 1 - 2* x* x - 2* z* z);
 		}
 		
-		return Vector!(T, 3)(head,elev,bank);
+		return Vector!(T, 3)(head,elev,bank); // TODO: Return a tuple with 3
+																					// values ?
 	}
-
+	
+	unittest {
+		auto q = Qua_d(PI_4,PI_4, PI_4);
+		auto rot = q.toEuler();
+		assert(rot.equal(Vec3d(PI_4,PI_4, PI_4)) );
+	}
+	
 	/+
 	/**
 	* Returns a Matrix that represents the rotation stored in a quaternion
@@ -541,6 +520,22 @@ if (is(T == real) || is(T == double) || is(T == float) )
 		return newQ;
 	}
 	
+	unittest {
+		auto q = Qua_d(1,1,1,1);
+		auto qf = cast(Qua_f) q;
+		auto qreal = cast(Qua_r) q;
+		auto qd = cast(Qua_d) qf;
+		
+		assert(is(typeof(qf) == Qua_f));
+		assert(is(typeof(qreal) == Qua_r));
+		assert(is(typeof(qd) == Qua_d));
+		for (auto i=0; i< 4; i++ ) {
+			assert( qf[i] == 1);
+			assert( qreal[i] == 1);
+			assert( qd[i] == 1);
+		}	
+	}
+	
 	/**
 	* Casting for make rotation Matrix
 	*/
@@ -562,7 +557,34 @@ if (is(T == real) || is(T == double) || is(T == float) )
 				 				 2.0L * (xz - wy), 2.0L * (yz + wx), 1.0L - 2.0L * (x2 + y2)]);
 		}
 	}
-
+	
+	unittest {
+		// Generation of Rotation matrix
+		auto q_bank = Qua_d(0,0, PI_2);
+		auto q_head = Qua_d(PI_4,0, 0);
+		auto q_elev = Qua_d(0, -PI_4, 0);
+		auto m = cast(Mat4d) q_bank;
+		assert (approxEqual(m.determinant , 1) );
+		assert (m.equal( Mat4d([1, 0, 0, 0,
+													 0, 0,-1, 0,
+												 0, 1, 0, 0,
+												 0, 0, 0, 1]) ));
+		
+		m = cast(Mat4d) q_head;
+		assert (approxEqual(m.determinant , 1) );
+		assert (m.equal( Mat4d([0.707107, 0, 0.707107, 0,
+													 0, 				1, 0,				 0,
+												 -0.707107,	0, 0.707107, 0,
+												 0,			  0, 0,				 1]) ));
+		
+		m = cast(Mat4d) q_elev;
+		assert (approxEqual(m.determinant , 1) );
+		assert (m.equal( Mat4d([0.707107, 0.707107, 0, 0,
+													 -0.707107, 0.707107, 0, 0,
+												 0				,	0			 	, 1, 0,
+												 0				, 0				, 0, 1]) ));
+	}
+	
 	/**
 	* Returns a string representation of this Quaternion
 	*/
@@ -592,6 +614,12 @@ template isQuaternion(T)
             // TODO : Should test for methods ?        
         }
     );
+}
+
+unittest {
+	auto q = Qua_f(1,2,3,4);
+	assert (isQuaternion!(typeof(q)));
+	assert (! isQuaternion!(int));
 }
 
 /+
