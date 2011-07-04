@@ -314,6 +314,11 @@ offset(j);}
     return Matrix(ret);
   }
   
+  Matrix opBinaryRight(string op) (in real rhs) const 
+  if (op == "*" ) {
+    return opBinary!(op) (rhs);
+  }
+  
   unittest {
     // Scalar multiplication
     auto a = Mat4f([2, 1, 1, 1,
@@ -330,6 +335,12 @@ offset(j);}
         } 
       }
     }
+    auto b = Mat4f([2, 1, 1, 1,
+              1, 2, 1, 1,
+              1, 1, 2, 1,
+              1, 1, 1, 2]);
+    b = 2*b;
+    assert (a == b);
   }
   
   /**
