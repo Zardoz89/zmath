@@ -104,8 +104,10 @@ if (__traits(isFloating, T) ) {
       coor[i] = xs[i];
     }
     
-    static if (dim == 3) coor[2] = 0;
-    static if (dim == 4) coor[3] = 1;
+    static if (dim == 3) 
+      if (xs.length < 3) coor[2] = 0;
+    static if (dim == 4) 
+      if (xs.length < 4) coor[3] = 1;
   }
   
   /+

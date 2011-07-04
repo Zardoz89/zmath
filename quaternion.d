@@ -62,7 +62,7 @@ if (__traits(isFloating, T))  {
   
   /**
   * Build a new Quaternion from a array
-  * If no there values for j, k and w, will be set to 0
+  * If no there values for j, and k, will be set to 0. w will set to 1
   * Params:
   *	xs = Array with coords
   */
@@ -74,6 +74,9 @@ if (__traits(isFloating, T))  {
     for (;i< dim; i++) {
       coor[i] = 0;
     }
+    
+    static if (dim == 4)
+      w = 1;
   }
   
   /**
@@ -377,19 +380,14 @@ if (__traits(isFloating, T))  {
   }
   
   /**
-  * Apply a rotation Quaternion over a 3d Vector
+  * Apply a 3d rotation Quaternion over a 3d/4d Vector
   */
-  Vector!(T, 3) rotate (in Vector!(T, 3) v) const
-  in {
-    assert (this.isUnit());
-  }
-  body {
-    Quaternion vecQua = Quaternion (v);
-    
-    Quaternion resQua = vecQua * this.conj();
+  K rotate (K) (K v) const 
+  if (isVector!K && K.dim >= 3){    
+    Quaternion vecQua = Quaternion (v);    
+    Quaternion resQua = vecQua * this.conj();    
     resQua = this * resQua;
-    
-    return Vector!(T, 3)( resQua.x, resQua.y, resQua.z ); 
+    return K( resQua.coor );
   }
   
   unittest {
@@ -397,13 +395,16 @@ if (__traits(isFloating, T))  {
     auto q_bank = Qua_d(0,0, PI_2);
     auto q_head = Qua_d(PI_4,0, 0);
     auto q_elev = Qua_d(0, -PI_4, 0);
-    Vec3d v1 = Vec3d(1,1,1);
-    Vec3d v2 = q_bank.rotate(v1);
+    auto v1 = Vec3d(1,1,1);
+    auto v4d = cast(Vec4d) v1;
+    auto v2 = q_bank.rotate(v1);    
     assert (v2.equal( Vec3d(1, -1, 1) ));
-    Vec3d v3 = q_head.rotate(v1);
+    auto v3 = q_head.rotate(v1);
     assert (v3.equal( Vec3d(1.41421, 1, 0) ));
-    Vec3d v4 = q_elev.rotate(v1);
+    auto v4 = q_elev.rotate(v1);
     assert (v4.equal( Vec3d(1.41421, 0, 1) ));
+    auto v5 = q_elev.rotate(v4d);
+    assert (v5.equal( Vec4d(1.41421, 0, 1) ));
   }
   
   // Misc **********************************************************************
