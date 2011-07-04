@@ -16,13 +16,15 @@ DFLAGS =
 SRC_DIR = ../src
 DOC_DIR = ../doc
 BIN_DIR = ../build
-LIB_DIR = ../build
+LIB_DIR = ../lib
+IMPORT_DIR = ../import
 
-LIB = zmath.a
+MODULE = zmath
+LIB = lib$(MODULE).a
 TARGET = $(LIB_DIR)/$(LIB)
 TEST_TARGET = $(BIN_DIR)/test
 
-SRC_FILES = aux.d vector.d matrix.d quaternion.d
+SRC_FILES = aux.d vector.d matrix.d quaternion.d math3d.d
 SRC_TEST_FILES = unittest.d
 
 # Build can be debug or release
@@ -38,7 +40,7 @@ DDOCFLAGS =
 DDOCFLAGS :=-c -o-
 
 # Set DFLAGS
-DFLAGS := -w 
+DFLAGS := -w
 ifeq ($(BUILD),debug)
 	DFLAGS += -gc -debug
 else
@@ -69,14 +71,14 @@ else
 ########################################################
 # Real compiling stuff
 
-$(BUILD) : $(LIB)
+$(BUILD) : $(TARGET)
 
-$(LIB) : $(SRC_FILES)
-	$(DMD) $(DFLAGS) -lib -of$(TARGET) $(SRC_FILES)
+$(TARGET) : $(SRC_FILES)
+	$(DMD) $(DFLAGS) -lib -of$(TARGET) $(SRC_FILES) -H -Hd$(IMPORT_DIR)/$(MODULE)
 
 # Make unittest and run it
-unittest : $(SRC_TEST_FILES) $(SRC_FILES)
-	$(DMD) $(DFLAGS) -unittest -of$(TEST_TARGET) $(SRC_TEST_FILES) $(SRC_FILES)
+unittest : $(TARGET) $(SRC_TEST_FILES) $(SRC_FILES)
+	$(DMD) $(DFLAGS) -unittest -of$(TEST_TARGET) $(SRC_TEST_FILES) -I$(IMPORT_DIR) -L-L$(LIB_DIR)/ -L-l$(MODULE)
 	$(TEST_TARGET)
 endif
 
@@ -87,6 +89,7 @@ DOCS = $(DOC_DIR)/aux.html \
 	$(DOC_DIR)/vector.html	\
 	$(DOC_DIR)/matrix.html	\
 	$(DOC_DIR)/quaternion.html	\
+	$(DOC_DIR)/math3d.html	\
 
 doc : $(DOCS)
 
@@ -102,9 +105,12 @@ $(DOC_DIR)/matrix.html : vector.d matrix.d
 $(DOC_DIR)/quaternion.html : vector.d matrix.d quaternion.d
 	$(DDOC) $(DDOCFLAGS) -Df$@ $^ -I$(SRC_DIR)
 
+$(DOC_DIR)/math3d.html : matrix.d quaternion.d math3d.d
+	$(DDOC) $(DDOCFLAGS) -Df$@ $^ -I$(SRC_DIR)
+
 ########################################################
-#make clean your home!
+#keep clean your home!
 .PHONY: clean
 clean :
-	rm -rf $(LIB_DIR)/$(LIB) $(DOC_DIR)/*
+	rm -rf $(TARGET) $(TEST_TARGET) $(DOC_DIR)/*
 
