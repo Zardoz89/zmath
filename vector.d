@@ -94,20 +94,21 @@ if (__traits(isFloating, T) ) {
   
   /**
   * Build a new Vector from a array
-  * If no there values for y, z and w, will be set to 0
+  * If no there values for y and z, will be set to 0. w sill beset to 1
   * Params:
   *	xs = Array with coords
   */
   this(in T[] xs) {
-    size_t i;
-    for (; i< dim && i< xs.length ; i++) {
-      coor[i] = xs[i];
+    size_t l = xs.length > dim? dim : xs.length;
+    coor[0..l] = xs[0..l].dup;
+    if (l <dim) {
+      static if (dim <4) {
+        coor[l..dim] = 0;
+      } else {
+        coor[l..dim-1] = 0;
+        w = 1;
+      }
     }
-    
-    static if (dim == 3) 
-      if (xs.length < 3) coor[2] = 0;
-    static if (dim == 4) 
-      if (xs.length < 4) coor[3] = 1;
   }
   
   /+
@@ -122,7 +123,10 @@ if (__traits(isFloating, T) ) {
     Vec2r v1 = Vec2r(0,2);
     auto v2 = Vec2r(2,0);
     auto v3 = Vec2r([1,1]);
+    float[] arr = [5,20.1,0,10,20];
+    auto v4 = Vec4f(arr);
     assert (v3 == Vec2r(1,1));
+    assert (v4 == Vec4f(5,20.1,0,10));
     
     assert (v2.x == 2);   // By Coordinate name
     assert (v2.coor[0] == 2); // By direct access to array (only internal use)
