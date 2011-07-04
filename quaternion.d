@@ -15,9 +15,9 @@ import zmath.matrix;
 import std.math;
 import std.conv;
 
-alias Quaternion!float	Qua_f;  /// Alias of a Quaternion with floats
-alias Quaternion!double	Qua_d;  /// Alias of a Quaternion with doubles
-alias Quaternion!real		Qua_r;  /// Alias of a Quaternion with reals
+alias Quaternion!float  Qua_f;  /// Alias of a Quaternion with floats
+alias Quaternion!double Qua_d;  /// Alias of a Quaternion with doubles
+alias Quaternion!real   Qua_r;  /// Alias of a Quaternion with reals
 
 /**
 * Quaternion over a FloatPoint type,
@@ -62,21 +62,16 @@ if (__traits(isFloating, T))  {
   
   /**
   * Build a new Quaternion from a array
-  * If no there values for j, and k, will be set to 0. w will set to 1
+  * If no there values for j, and k, will be set to 0. w is set to 1
   * Params:
   *	xs = Array with coords
   */
-  this(in T[] xs) {
-    size_t i;
-    for (; i< dim && i< xs.length ; i++) {
-      coor[i] = xs[i];
+  this(in T[] xs) {    
+    coor[0..xs.length] = xs.dup;
+    if (xs.length <4) {
+      coor[xs.length..$-1] = 0; // imaginary part
+      w = 1; // real part
     }
-    for (;i< dim; i++) {
-      coor[i] = 0;
-    }
-    
-    static if (dim == 4)
-      w = 1;
   }
   
   /**
@@ -87,12 +82,8 @@ if (__traits(isFloating, T))  {
   */
   this(in Vector!(T, 3) v) {
     size_t i;
-    for (; i< dim && i< v.dim ; i++) {
-      coor[i] = v[i];
-    }
-    for (;i< dim; i++) {
-      coor[i] = 1;
-    }
+    coor[0..3] = v.coor.dup;
+    w = 1;
   }
   
   /**
@@ -102,9 +93,7 @@ if (__traits(isFloating, T))  {
   */
   this(in Vector!(T, 4) v) {
     size_t i;
-    for (; i< dim && i< v.dim ; i++) {
-      coor[i] = v[i];
-    }
+    coor = v.coor.dup;
   }
   
   unittest {
@@ -124,7 +113,7 @@ if (__traits(isFloating, T))  {
   *	Returns:
   *	Quaternion that represents a rotation
   */
-  this( Vector!(T,3) v, in real angle) {
+  this( Vector!(T,3) v, in T angle) {
     v.normalize();
     auto sin_2 = sin(angle / 2.0L);
     i = v.x * sin_2;
@@ -148,7 +137,7 @@ if (__traits(isFloating, T))  {
   *	Returns:
   *	Quaternion that represents a rotation
   */
-  this( in real heading, in real elevation, in real bank)	{
+  this( in T heading, in T elevation, in T bank)	{
     auto c1 = cos(heading/2);     // x =s1s2*c3  + c1c2 *s3
     auto s1 = sin(heading/2);     // y =s1*c2*c3 + c1*s2*s3
     auto c2 = cos(elevation/2);   // z =c1*s2*c3 - s1*c2*s3
@@ -364,7 +353,7 @@ if (__traits(isFloating, T))  {
   */
   void normalize() {
     if (!isUnit()) {
-      real l = 1 / this.length;
+      T l = 1 / this.length;
       x = x *l;
       y = y *l;
       z = z *l;
