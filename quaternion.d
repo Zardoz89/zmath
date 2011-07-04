@@ -99,7 +99,9 @@ if (__traits(isFloating, T))  {
   unittest {
     auto q = Qua_r(1,2,3,4);
     assert(q.coor == [1,2,3,4]);
-    q = Qua_r([4.0,3.0,2.0,1.0]);
+    real[] arr = [4.0,3.0,2.0,1.0];
+    q = Qua_r(arr);
+    arr[0] = 7.7;
     assert(q.coor == [4,3,2,1]);
     q = Qua_r(Vec4r(1,2,3,4));
     assert(q.coor == [1,2,3,4]);
