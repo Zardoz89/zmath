@@ -69,7 +69,7 @@ if (__traits(isFloating, T))  {
   this(in T[] xs) {
     size_t l = xs.length > dim? dim : xs.length;
     coor[0..l] = xs[0..l].dup;
-    if (l <4) {
+    if (l <dim) {
       coor[l..$-1] = 0; // imaginary part
       w = 1; // real part
     }
@@ -92,7 +92,6 @@ if (__traits(isFloating, T))  {
   *	v = Vector 4d
   */
   this(in Vector!(T, 4) v) {
-    size_t i;
     coor = v.coor.dup;
   }
   
@@ -236,7 +235,7 @@ if (__traits(isFloating, T))  {
   /**
   * Approximated equality with controlable precision
   */
-  const bool equal(ref const Quaternion rhs, T maxRelDiff,
+  bool equal(ref const Quaternion rhs, T maxRelDiff,
                     T maxAbsDiff = 1e-05) const {
     return approxEqual(x, rhs.x, maxRelDiff, maxAbsDiff) 
         && approxEqual(y, rhs.y, maxRelDiff, maxAbsDiff) 
