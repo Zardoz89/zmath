@@ -66,10 +66,11 @@ if (__traits(isFloating, T))  {
   * Params:
   *	xs = Array with coords
   */
-  this(in T[] xs) {    
-    coor[0..xs.length] = xs.dup;
-    if (xs.length <4) {
-      coor[xs.length..$-1] = 0; // imaginary part
+  this(in T[] xs) {
+    size_t l = xs.length > dim? dim : xs.length;
+    coor[0..l] = xs[0..l].dup;
+    if (l <4) {
+      coor[l..$-1] = 0; // imaginary part
       w = 1; // real part
     }
   }
@@ -81,7 +82,6 @@ if (__traits(isFloating, T))  {
   *	v = Vector 3d 
   */
   this(in Vector!(T, 3) v) {
-    size_t i;
     coor[0..3] = v.coor.dup;
     w = 1;
   }
@@ -99,7 +99,7 @@ if (__traits(isFloating, T))  {
   unittest {
     auto q = Qua_r(1,2,3,4);
     assert(q.coor == [1,2,3,4]);
-    real[] arr = [4.0,3.0,2.0,1.0];
+    real[] arr = [4.0,3.0,2.0,1.0, 20.0, 30.0];
     q = Qua_r(arr);
     arr[0] = 7.7;
     assert(q.coor == [4,3,2,1]);
