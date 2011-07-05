@@ -43,23 +43,26 @@ if (is(T == real) || is(T == double) || is(T == float)
   
   // Consts
   static if (dim == 2) { // 2x2
-    public static enum Matrix!(T,2) ZERO = {[0, 0,  0 ,0]};	 
-    public static enum Matrix!(T,2) IDENTITY = {[1, 0,  0 ,1]};	 
+    public static enum Matrix!(T,2) ZERO = Matrix!(T,2)([0, 0,  0 ,0]); 
+    public static enum Matrix!(T,2) IDENTITY = Matrix!(T,2)([1, 0,  0 ,1]);
   }
   static if (dim == 3) { // 3x3
-    public static enum Matrix!(T,3) ZERO = {[0, 0, 0,  0 ,0, 0,  0 ,0, 0]};	 
-    public static enum Matrix!(T,3) IDENTITY = {[1, 0, 0,  0, 1, 0,  0, 0, 1]};
-
+    public static enum Matrix!(T,3) ZERO = Matrix!(T,3)([0, 0, 0, 
+                                                         0 ,0, 0, 
+                                                         0 ,0, 0]);
+    public static enum Matrix!(T,3) IDENTITY = Matrix!(T,3)([1, 0, 0, 
+                                                             0, 1, 0, 
+                                                             0, 0, 1]);
   }
   static if (dim == 4) { // 4x4
-    public static enum Matrix!(T,4) ZERO = {[0, 0, 0, 0,
-                                            0, 0, 0, 0,
-                                            0, 0, 0, 0,
-                                            0, 0, 0, 0]};
-    public static enum Matrix!(T,4) IDENTITY = {[1, 0, 0, 0,
-                                                0, 1, 0, 0,
-                                                0, 0, 1, 0,
-                                                0, 0, 0, 1]};
+    public static enum Matrix!(T,4) ZERO = Matrix!(T,4)([0, 0, 0, 0,
+                                                         0, 0, 0, 0,
+                                                         0, 0, 0, 0,
+                                                         0, 0, 0, 0]);
+    public static enum Matrix!(T,4) IDENTITY = Matrix!(T,4)([1, 0, 0, 0,
+                                                             0, 1, 0, 0,
+                                                             0, 0, 1, 0,
+                                                             0, 0, 0, 1]);
   }
   unittest {
     // Fundamental Matrixes
