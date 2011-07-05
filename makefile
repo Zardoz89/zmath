@@ -112,5 +112,5 @@ $(DOC_DIR)/math3d.html : matrix.d quaternion.d math3d.d
 #keep clean your home!
 .PHONY: clean
 clean :
-	rm -rf $(TARGET) $(TEST_TARGET) $(DOC_DIR)/*
+	rm -rf $(TARGET) $(TEST_TARGET) $(DOC_DIR)/* $(IMPORT_DIR)/$(MODULE)/*
 
