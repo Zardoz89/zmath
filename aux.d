@@ -15,14 +15,15 @@ enum M_1_180 = 1 / 180.0L; /// Inverse of 180
 * Clamps a float point between -1.0 and +1.0
 * Params:
 *	x = Float point number to clamp 
+* Returns A flot point number clamped between -1.0 and 1.0
 */
-@safe pure nothrow T clamp (T) (in T x) 
+@safe pure nothrow T clamp (T=float) (in T x) 
 if (__traits(isFloating, T)) {
   if ( x > 1.0L) 
     return 1.0L;
   if ( x < -1.0L)
     return -1.0L;
-  return x;	
+  return x;
 }
 
 unittest {
@@ -38,8 +39,9 @@ unittest {
 * Converts angles in degrees to radians
 * Params:
 * x = Angle in grades
+* Returns angle in radians
 */
-@safe pure nothrow T toRadians (T) (in T x) 
+@safe pure nothrow T toRadians (T=float) (in T x) 
 if (__traits(isScalar, T)) {
   return x * PI * M_1_180;
 }
@@ -53,8 +55,9 @@ unittest {
 * Converts angles in radians to degrees
 * Params:
 * x = Angle in radians
+* REturns angle in grades
 */
-@safe pure nothrow T toDegrees (T) (in T x) 
+@safe pure nothrow T toDegrees (T=float) (in T x) 
 if (__traits(isScalar, T)) {
   return x * 180.0L * M_1_PI; // x * 180 / PI
 }
@@ -65,18 +68,17 @@ unittest {
 
 /**
 * Compare two float point numbers with assuming that are equal if are in range
-of maxAbsDiff
+* of maxAbsDiff
 * Params:
 * a = A float point number
 * b = Other float point
 * maxRelDiff = Max relative difference 
 * maxAbsDiff = Max absoulte difference
-* Returns:
-* If _a are aproximated equal that _b, returns 0. Otherwise, if _a > _b, returns
-1 and if _a < _b , returns -1;
+* Returns If _a are aproximated equal that _b, returns 0. Otherwise, if _a > _b,
+* returns 1 and if _a < _b , returns -1;
 */
-int cmpFloat (T, U) ( in T a, in U b, T maxRelDiff = 1e-2, T maxAbsDiff = 1e-5 )
-{
+int cmpFloat (T=float, U=float) ( in T a, in U b, T maxRelDiff = 1e-2, 
+                T maxAbsDiff = 1e-5 ) {
   static assert(__traits(isFloating, T), "'a' must be a float point number");
   static assert(__traits(isScalar, U), "'b' must be a number type");
   
