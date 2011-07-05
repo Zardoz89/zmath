@@ -14,7 +14,7 @@ int main (string[] args) {
 		auto v = Vec3f(1,2,3);		// Vector
 		auto m = Mat2f.IDENTITY;	// Matrix
 		auto q = Qua_f();					// Quaternion
-		auto ortho = orthoMat(100,100,100); //Math3d
+		auto ortho = orthoMat(100f,100f,100f); //Math3d
 	}
 	
 	writeln("Success!\n");
