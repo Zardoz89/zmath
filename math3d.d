@@ -8,6 +8,7 @@ Authors: Luis Panadero Guardeño $(LINK http://zardoz.es)
 module zmath.math3d;
 
 import zmath.matrix;
+import zmath.vector;
 import zmath.quaternion;
 
 import std.math;
@@ -63,7 +64,7 @@ unittest {
  * zMax = Far clipping plane
  * Returns a orthographic projection matrix
  */
-M makeOrtho(M) (double xMin, double xMax, double yMin, double yMax,
+M makeOrtho(M=Mat4f) (double xMin, double xMax, double yMin, double yMax,
                 double zMin = -1, double zMax = 1) 
 if (isMatrix!M && M.dim >= 4)  
 in {
@@ -90,7 +91,7 @@ in {
  * deep = Deep of visible zone
  * Returns a orthographic projection matrix
  */
-M makeOrtho(M) (double width, double height, double deep) 
+M makeOrtho(M=Mat4f) (double width, double height, double deep) 
 if (isMatrix!M && M.dim >= 4)
 in {
   assert (width > 0);
@@ -104,8 +105,9 @@ in {
 }
 
 unittest {
-  auto ortho = makeOrtho!Mat4f(10.0,10.0,10.0);
+  auto ortho = makeOrtho(10.0,10.0,10.0);
   // TODO check values
 }
+
 
 // TODO More usefull functions, etc...
