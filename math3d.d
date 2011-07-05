@@ -22,7 +22,7 @@ import std.math;
  * zMax = Far clipping plane
  * Returns a perspective projection matrix
  */ 
-M makePerspective(M) (double fov, double aspect, double zMin, double zMax) 
+M makePerspective(M=Mat4f, T=float) (T fov, T aspect, T zMin, T zMax) 
 if (isMatrix!M && M.dim >= 4)
 in {
   assert (zMin > 0);
@@ -64,9 +64,9 @@ unittest {
  * zMax = Far clipping plane
  * Returns a orthographic projection matrix
  */
-M makeOrtho(M=Mat4f) (double xMin, double xMax, double yMin, double yMax,
-                double zMin = -1, double zMax = 1) 
-if (isMatrix!M && M.dim >= 4)  
+M makeOrtho(M=Mat4f,T=float) (T xMin, T xMax, T yMin, T yMax, T zMin = -1,
+                              T zMax = 1) 
+if (isMatrix!M && M.dim >= 4 && is(T : real))  
 in {
   assert (xMin < xMax);
   assert (yMin < yMax);
@@ -91,8 +91,8 @@ in {
  * deep = Deep of visible zone
  * Returns a orthographic projection matrix
  */
-M makeOrtho(M=Mat4f) (double width, double height, double deep) 
-if (isMatrix!M && M.dim >= 4)
+M makeOrtho(M=Mat4f,T=float) (T width, T height, T deep) 
+if (isMatrix!M && M.dim >= 4 && is(T : real))
 in {
   assert (width > 0);
   assert (height > 0);
