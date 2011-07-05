@@ -39,10 +39,10 @@ unittest {
 M perspectiveMat(M=Mat4f, T=float) (T fov, T aspect, T zMin, T zMax) 
 if (is4dMat!M && is(T : real))
 in {
-  assert (zMin > 0);
-  assert (zMax > 0);
-  assert (fov > 0);
-  assert (aspect > 0);
+  assert (zMin > 0, "Zmin equal or less that zero");
+  assert (zMax > 0, "Zmax equal or less that zero");
+  assert (fov > 0, "Not valid FOV");
+  assert (aspect > 0, "Not valid aspect ratio");
 } body  {
   M mat = M.ZERO; // all set to 0
   double yMax = zMin * tan(fov *.5);
@@ -78,13 +78,13 @@ unittest {
  * zMax = Far clipping plane
  * Returns a orthographic projection matrix
  */
-M orthoMat(M=Mat4f,T=float) (T xMin, T xMax, T yMin, T yMax, T zMin = -1,
+M orthoMat(M=Mat4f,T=float) (T xMin, T xMax, T yMin, T yMax, T zMin = 0,
                               T zMax = 1) 
 if (is4dMat!M && is(T : real))  
 in {
-  assert (xMin < xMax);
-  assert (yMin < yMax);
-  assert (zMin < zMax);
+  assert (xMin != xMax);
+  assert (yMin != yMax);
+  assert (zMin != zMax);
 } body {
   M mat = M.ZERO;
   mat[0,0] = 2.0 / (xMax - xMin);
@@ -105,7 +105,7 @@ in {
  * deep = Deep of visible zone
  * Returns a orthographic projection matrix
  */
-M orthoMat(M=Mat4f,T=float) (T width, T height, T deep) 
+M orthoMat(M=Mat4f,T=float) (T width =1f, T height = 1f, T deep = 1f) 
 if (is4dMat!M && is(T : real))
 in {
   assert (width > 0);
@@ -114,7 +114,7 @@ in {
 } body  {
   auto xmin = - width /2.0;  auto xmax = -xmin;
   auto ymin = - height /2.0; auto ymax = -ymin;
-  auto zmin = - deep /2.0;   auto zmax = -zmin;
+  auto zmin = 0f;   auto zmax = deep;
   return orthoMat!(M,T)(xmin, xmax, ymin, ymax, zmin, zmax);
 }
 
