@@ -662,6 +662,22 @@ offset(j);}
   }
   
   /**
+   * Return a pointer of a copy internal array
+   */ 
+  @property T* ptr () {
+    return cell.dup.ptr;
+  }
+  
+  unittest {
+    auto m = Mat3f.IDENTITY;
+    auto pt = m.ptr;
+    pt[0] = 5;
+    assert(m[0,0] != 5);
+    assert(pt[0] == 5);
+    assert(pt[5] == 1);
+  }
+  
+  /**
   * Casting operation that allow convert between Matrix types
   */
   Tout opCast( Tout ) () 
