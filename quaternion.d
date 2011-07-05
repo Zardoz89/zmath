@@ -22,7 +22,7 @@ alias Quaternion!real   Qua_r;  /// Alias of a Quaternion with reals
 /**
 * Quaternion over a FloatPoint type,
 */
-public struct Quaternion(T)
+public struct Quaternion(T=float)
 if (__traits(isFloating, T))  {
   static assert (__traits(isFloating, T));
   
@@ -503,11 +503,13 @@ if (__traits(isFloating, T))  {
   * Casting for make rotation Matrix
   */
   Tout opCast( Tout ) () 
-  if (isMatrix!(Tout) && Tout.dim >= 3) {    
+  if (isMatrix!(Tout) && Tout.dim >= 3)
+  in {
+    assert (this.isUnit());
+  } body {    
     auto x2 = x*x;	auto y2 = y*y;	auto z2 = z*z;
     auto xy = x*y;	auto xz = x*z;	auto yz = y*z;
-    auto wx = w*x;	auto wy = w*y;	auto wz = w*z;
-    
+    auto wx = w*x;	auto wy = w*y;	auto wz = w*z;    
     static if (Tout.dim == 4) {
       return Tout([ 1.0L - 2.0L * (y2 +z2), 2.0L * (xy - wz), 2.0L * (xz + wy),
         0.0L, 2.0L * (xy + wz), 1.0L - 2.0L * (x2 + z2), 2.0L * (yz - wx), 
