@@ -1,0 +1,21 @@
+TO DO :
+-More usefull 3d math funtions
+-Camera 3d math funtions
+-Matrix stack/container
+-Basic 2d collision :
+	- Circle collision
+	- Aligned boxes
+	- Convex shapes
+-Basic 3d collision :
+	- Sphere
+	- Y axis alligned cylinder (Doom collision model)
+	- Axis alligned boxes
+
+OBJETIVES ARCHIVED :
+-Test that matrix can be used with OpenGL -> Tested with glLoadMatrix OK
+-Funtions to generate Transformation matrix -> OK
+-Funtions to generate projection matrix -> OK
+-Misc math funtions and constans -> OK
+-Quaternion type and conversion to rotation matrix -> OK
+-Matrix type in major column orderin (OpenGL matrix) -> OK
+-Vector type -> OK
