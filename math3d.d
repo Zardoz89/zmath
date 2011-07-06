@@ -11,7 +11,7 @@ import zmath.matrix;
 import zmath.vector;
 import zmath.quaternion;
 
-import std.math;
+import std.math, std.traits;
 
 /**
  * Checks if a type is a valid Matrix for 3d math over 4d
@@ -36,19 +36,20 @@ unittest {
  * zMax = Far clipping plane
  * Returns a perspective projection matrix
  */ 
-M perspectiveMat(M=Mat4f, T=float) (T fov, T aspect, T zMin, T zMax) 
-if (is4dMat!M && is(T : real))
+M perspectiveMat(M=Mat4f, T=float, U=float, V=float, W=float) 
+                          (T fov, U aspect, V zMin, W zMax) 
+if (is4dMat!M && isNumeric!T && isNumeric!U && isNumeric!V && isNumeric!W)
 in {
   assert (zMin > 0, "Zmin equal or less that zero");
   assert (zMax > 0, "Zmax equal or less that zero");
   assert (fov > 0, "Not valid FOV");
   assert (aspect > 0, "Not valid aspect ratio");
 } body  {
-  M mat = M.IDENTITY; // all set to 0
-  double yMax = zMin * tan(fov);
-  double yMin = -yMax;
-  double xMax = yMax * aspect;
-  double xMin = -xMax;
+  M mat = M.ZERO; // all set to 0
+  real yMax = zMin * tan(fov); // Max precision
+  real yMin = -yMax;
+  real xMax = yMax * aspect;
+  real xMin = -xMax;
   
   mat[0,0] = (2.0 * zMin) / (xMax - xMin);
   mat[1,1] = (2.0 * zMin) / (yMax - yMin);
@@ -65,8 +66,8 @@ in {
 unittest {
   auto proy = perspectiveMat!Mat4f (PI_4, 800.0 / 600.0, 1.0, 100.0);
   assert (proy == Mat4f([0.75, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1.0202, -1, 0, 0,
--2.0202, 0]));
-  // Check value from glOrhto
+                          -2.0202, 0]));
+  // Check value take from glOrhto
 }
 
 /**
@@ -80,9 +81,10 @@ unittest {
  * zMax = Far clipping plane
  * Returns a orthographic projection matrix
  */
-M orthoMat(M=Mat4f,T=float) (T xMin, T xMax, T yMin, T yMax, T zMin = 0f,
-                              T zMax = 1f) 
-if (is4dMat!M && is(T : real))  
+M orthoMat(M=Mat4f,T=float, U=float, V=float, W=float, X=float, Y=float)
+                    (T xMin, U xMax, V yMin, W yMax, X zMin = 0, Y zMax = 1) 
+if (is4dMat!M && isNumeric!T && isNumeric!U && isNumeric!V && isNumeric!W
+    && isNumeric!X && isNumeric!Y)
 in {
   assert (xMin != xMax);
   assert (yMin != yMax);
@@ -107,21 +109,21 @@ in {
  * deep = Deep of visible zone
  * Returns a orthographic projection matrix
  */
-M orthoMat(M=Mat4f,T=float) (T width =1f, T height = 1f, T deep = 1f) 
-if (is4dMat!M && is(T : real))
+M orthoMat(M=Mat4f,T=float, U=float, V=float)
+                  (T width =1, U height = 1, V deep = 1) 
+if (is4dMat!M && isNumeric!T && isNumeric!U && isNumeric!V)
 in {
   assert (width > 0);
   assert (height > 0);
   assert (deep > 0);
 } body  {
-  auto xmin = - width /2.0;  auto xmax = -xmin;
-  auto ymin = - height /2.0; auto ymax = -ymin;
-  auto zmin = 0f;   auto zmax = deep;
-  return orthoMat!(M,T)(xmin, xmax, ymin, ymax, zmin, zmax);
+  real x = - width /2.0L; // Max precision
+  real y = - height /2.0L;
+  return orthoMat!M(x, -x, y, -y, 0f, deep);
 }
 
 unittest {
-  auto ortho = orthoMat(100.0,75.0,100.0);
+  auto ortho = orthoMat(100,75,100);
   assert (orhto = Mat4f([0.02, 0, 0, 0, 0, 0.0266667, 0, 0, 0, 0, -0.02, 0, -0,
 -0, -1, 1]) );
   // Values from glOrtho
@@ -135,9 +137,9 @@ unittest {
  */ 
 M translateMat(M=Mat4f, V=Vec3f) (V v) 
 if (isVector!V && V.dim <= 3 && is4dMat!M) {
-  M mat = M.IDENTITY;
+  M m = M.IDENTITY;
   m[3] = v; // internal cast in opIndexAssign set w=1 by default 
-  return mat;
+  return m;
 }
 
 /**
@@ -285,8 +287,8 @@ if (isVector!V && V.dim <= 3 && is4dMat!M && is(T : real)) {
  * angle = angle in radians
  * Returns a 3d rotation matrix
  */ 
-M rotMat(M=Mat4f,T=float) (T x, T y, T z, T angle) 
-if (is4dMat!M && is(T : real)) {
+M rotMat(M=Mat4f,T=float, U=float) (T x, T y, T z, U angle) 
+if (is4dMat!M && is(T : real) && is(U :real)) {
   return rotMat!(M,Vector!(3,T),T) (Vector!(3,T)(x,y,z), angle);
 }
 
