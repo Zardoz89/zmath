@@ -75,6 +75,8 @@ $(BUILD) : $(TARGET)
 
 $(TARGET) : $(SRC_FILES)
 	$(DMD) $(DFLAGS) -lib -of$(TARGET) $(SRC_FILES) -H -Hd$(IMPORT_DIR)/$(MODULE)
+	$(DMD) $(DFLAGS) $(SRC_FILES) -o- -H -Hd$(IMPORT_DIR)/$(MODULE)
+
 
 # Make unittest and run it
 unittest : $(TARGET) $(SRC_TEST_FILES) $(SRC_FILES)
