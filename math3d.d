@@ -44,11 +44,11 @@ in {
   assert (fov > 0, "Not valid FOV");
   assert (aspect > 0, "Not valid aspect ratio");
 } body  {
-  M mat = M.ZERO; // all set to 0
-  double yMax = zMin * tan(fov *.5);
+  M mat = M.IDENTITY; // all set to 0
+  double yMax = zMin * tan(fov);
   double yMin = -yMax;
-  double xMin = yMin - aspect;
-  double xMax = -xMin;
+  double xMax = yMax * aspect;
+  double xMin = -xMax;
   
   mat[0,0] = (2.0 * zMin) / (xMax - xMin);
   mat[1,1] = (2.0 * zMin) / (yMax - yMin);
@@ -63,8 +63,10 @@ in {
 }
 
 unittest {
-  auto proy = perspectiveMat!Mat4f (PI_2, 1.0, 1.0, 100.0);
-  // TODO Check values
+  auto proy = perspectiveMat!Mat4f (PI_4, 800.0 / 600.0, 1.0, 100.0);
+  assert (proy == Mat4f([0.75, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1.0202, -1, 0, 0,
+-2.0202, 0]));
+  // Check value from glOrhto
 }
 
 /**
@@ -78,8 +80,8 @@ unittest {
  * zMax = Far clipping plane
  * Returns a orthographic projection matrix
  */
-M orthoMat(M=Mat4f,T=float) (T xMin, T xMax, T yMin, T yMax, T zMin = 0,
-                              T zMax = 1) 
+M orthoMat(M=Mat4f,T=float) (T xMin, T xMax, T yMin, T yMax, T zMin = 0f,
+                              T zMax = 1f) 
 if (is4dMat!M && is(T : real))  
 in {
   assert (xMin != xMax);
@@ -119,8 +121,10 @@ in {
 }
 
 unittest {
-  auto ortho = orthoMat(10.0,10.0,10.0);
-  // TODO check values
+  auto ortho = orthoMat(100.0,75.0,100.0);
+  assert (orhto = Mat4f([0.02, 0, 0, 0, 0, 0.0266667, 0, 0, 0, 0, -0.02, 0, -0,
+-0, -1, 1]) );
+  // Values from glOrtho
 }
 
 /**
