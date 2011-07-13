@@ -94,20 +94,20 @@ DOCS = $(DOC_DIR)/aux.html \
 	$(DOC_DIR)/math3d.html	\
 
 doc : $(DOCS)
-
-$(DOC_DIR)/aux.html : aux.d
+ 
+$(DOC_DIR)/aux.html : $(SRC_DIR)/aux.d
 	$(DDOC) $(DDOCFLAGS) -Df$@ $< -I$(SRC_DIR)
 
-$(DOC_DIR)/vector.html : vector.d
+$(DOC_DIR)/vector.html : $(SRC_DIR)/vector.d
 	$(DDOC) $(DDOCFLAGS) -Df$@ $< -I$(SRC_DIR)
 
-$(DOC_DIR)/matrix.html : vector.d matrix.d
+$(DOC_DIR)/matrix.html : $(SRC_DIR)/vector.d $(SRC_DIR)/matrix.d
 	$(DDOC) $(DDOCFLAGS) -Df$@ $^ -I$(SRC_DIR)
 
-$(DOC_DIR)/quaternion.html : vector.d matrix.d quaternion.d
+$(DOC_DIR)/quaternion.html : $(SRC_DIR)/vector.d $(SRC_DIR)/matrix.d $(SRC_DIR)/quaternion.d
 	$(DDOC) $(DDOCFLAGS) -Df$@ $^ -I$(SRC_DIR)
 
-$(DOC_DIR)/math3d.html : matrix.d quaternion.d math3d.d
+$(DOC_DIR)/math3d.html : $(SRC_DIR)/vector.d $(SRC_DIR)/matrix.d $(SRC_DIR)/quaternion.d $(SRC_DIR)/math3d.d
 	$(DDOC) $(DDOCFLAGS) -Df$@ $^ -I$(SRC_DIR)
 
 ########################################################
