@@ -13,19 +13,19 @@ DDOC = dmd
 DMD = dmd
 DFLAGS =
 
-SRC_DIR = ../src
-DOC_DIR = ../doc
-BIN_DIR = ../build
-LIB_DIR = ../lib
-IMPORT_DIR = ../import
+SRC_DIR = ./src
+DOC_DIR = ./doc
+BIN_DIR = ./build
+LIB_DIR = ./lib
+IMPORT_DIR = ./import
 
 MODULE = zmath
 LIB = lib$(MODULE).a
 TARGET = $(LIB_DIR)/$(LIB)
 TEST_TARGET = $(BIN_DIR)/test
 
-SRC_FILES = aux.d vector.d matrix.d quaternion.d math3d.d
-SRC_TEST_FILES = unittest.d
+SRC_FILES = $(SRC_DIR)/aux.d $(SRC_DIR)/vector.d $(SRC_DIR)/matrix.d $(SRC_DIR)/quaternion.d $(SRC_DIR)/math3d.d
+SRC_TEST_FILES = $(SRC_DIR)/unittest.d
 
 # Build can be debug or release
 BUILD =
