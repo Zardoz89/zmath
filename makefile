@@ -13,11 +13,12 @@ DDOC = dmd
 DMD = dmd
 DFLAGS =
 
-SRC_DIR = ./src
-DOC_DIR = ./doc
-BIN_DIR = ./build
-LIB_DIR = ./lib
-IMPORT_DIR = ./import
+BASE_DIR = .
+SRC_DIR = $(BASE_DIR)/src
+DOC_DIR = $(BASE_DIR)/doc
+BIN_DIR = $(BASE_DIR)/build
+LIB_DIR = $(BASE_DIR)/lib
+IMPORT_DIR = $(BASE_DIR)/import
 
 MODULE = zmath
 LIB = lib$(MODULE).a
