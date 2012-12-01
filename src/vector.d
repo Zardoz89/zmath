@@ -523,12 +523,12 @@ if (__traits(isFloating, T) ) {
   * Returns : True if this vector not have a NaN value
   */
   @property bool isOk() {
-    if (isNaN(x) ==0 || isNaN(y) ==0) return true;
+    if (isNaN(x) || isNaN(y)) return false;
     static if (dim >= 3)
-      if (isNaN(z) ==0) return true;
+      if (isNaN(z)) return false;
     static if (dim >= 4)
-      if (isNaN(w) ==0) return true;	
-    return false;	
+      if (isNaN(w)) return false;	
+    return true;	
   }
   
   /**
