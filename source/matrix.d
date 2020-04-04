@@ -1,9 +1,5 @@
 /**
 Defines a squared Matrix with column-major ordering from 2x2 to 4x4 size
-
-License: $(LINK2 http://www.gnu.org/licenses/lgpl.txt, LGPL 3).
-
-Authors: Luis Panadero Guardeño $(LINK http://zardoz.es)
 */
 module zmath.matrix;
 
@@ -37,8 +33,8 @@ if (is(T == real) || is(T == double) || is(T == float)
   private alias Vector!(T,dim) VCol;
   
   union {
-    private T cell[cells];	/// Matrix like of a array of cells in major-column
-    private VCol col[dim_];	/// Matrix like of a array of column vectors
+    private T[cells] cell;	/// Matrix like of a array of cells in major-column
+    private VCol[dim_] col;	/// Matrix like of a array of column vectors
   }
   
   // Consts

@@ -2,10 +2,6 @@
 A Quaternion it's used to store a space orientation / rotation, and makes easy 
 to interpolate rotations, at same time that avoid grimbal locks that have using
 Euler angles
-
-License: $(LINK2 http://www.gnu.org/licenses/lgpl.txt, LGPL 3).
-
-Authors: Luis Panadero Guardeño $(LINK http://zardoz.es)
 */
 module zmath.quaternion;
 
@@ -44,16 +40,16 @@ if (__traits(isFloating, T))  {
     }
   }
   
+
   /**
   * Build a new Quaternion from a set of initial values
-  * If no there values will be set to 0,0,0,1
   * Params:
   *	i = i imaginary component
   *	j = j imaginary component
   *	k = k imaginary component
   *	w = i real component
   */
-  this(in T i=0, in T j=0, in T k = 0, in T w = 1) {
+  this(in T i, in T j, in T k, in T w) {
     this.i = i;
     this.j = j;
     this.k = k;

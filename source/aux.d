@@ -1,9 +1,5 @@
 /**
 Some auxiliar math funtions
-
-License: $(LINK2 http://www.gnu.org/licenses/lgpl.txt, LGPL 3).
-
-Authors: Luis Panadero Guardeño $(LINK http://zardoz.es)
 */
 module zmath.aux;
 

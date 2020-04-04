@@ -1,9 +1,5 @@
 /**
 Usefull functions to work in 3d math
-
-License: $(LINK2 http://www.gnu.org/licenses/lgpl.txt, LGPL 3).
-
-Authors: Luis Panadero Guardeño $(LINK http://zardoz.es)
 */
 module zmath.math3d;
 
@@ -17,7 +13,12 @@ import std.math, std.traits;
  * Checks if a type is a valid Matrix for 3d math over 4d
  */ 
 template is4dMat(M) {
-  immutable bool is4dMat = (isMatrix!M && M.dim >= 4);
+  immutable bool is4dMat = (isMatrix!M && __traits(compiles,
+        (){  
+            M t;
+            static assert(M.dim == 4);
+        }
+    ));
 }
 
 unittest {
@@ -64,10 +65,15 @@ in {
 }
 
 unittest {
-  auto proy = perspectiveMat!Mat4f (PI_4, 800.0 / 600.0, 1.0, 100.0);
-  assert (proy == Mat4f([0.75, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1.0202, -1, 0, 0,
-                          -2.0202, 0]));
-  // Check value take from glOrhto
+  const auto proy = perspectiveMat!Mat4f (PI_4, 800.0 / 600.0, 1.0, 100.0);
+  const auto expected = Mat4f([
+        0.75, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, -1.0202, -1,
+        0, 0, -2.0202, 0
+  ]);
+  assert (proy == expected);
+  // Check value take from glOrtho
 }
 
 /**
@@ -123,9 +129,14 @@ in {
 }
 
 unittest {
-  auto ortho = orthoMat(100,75,100);
-  assert (orhto = Mat4f([0.02, 0, 0, 0, 0, 0.0266667, 0, 0, 0, 0, -0.02, 0, -0,
--0, -1, 1]) );
+  const ortho = orthoMat(100,75,100);
+  const expected = Mat4f([
+      0.02, 0, 0, 0,
+      0, 0.0266667, 0, 0,
+      0, 0, -0.02, 0,
+      -0, -0, -1, 1
+  ]); 
+  assert (ortho == expected);
   // Values from glOrtho
 }
 
@@ -152,12 +163,12 @@ if (isVector!V && V.dim <= 3 && is4dMat!M) {
  */ 
 M translateMat(M=Mat4f, T=float) (T x, T y, T z)
 if (is4dMat!M && is(T : real)) {
-  return translateMat(M,Vector!(3,T) )(Vector!(3,T) (x,y,z) );
+  return translateMat!(M, Vector!(T, 3))(Vector!(T, 3) (x,y,z));
 }
 
 unittest {
-  auto m1 = translateMat(1,2,3);
-  auto m2 = trasnlateMat(Vec3f(1,2,3));
+  auto m1 = translateMat(1f, 2f, 3f);
+  auto m2 = translateMat(Vec3f(1, 2, 3));
   assert(m1 == m2);
   assert(m1[0,3] == 1);
   assert(m1[1,3] == 2);
@@ -232,6 +243,7 @@ unittest {
   assert (m[3,3] == 1);
 }
 
+/+
 /**
  * Creates a rotation matrix from a axis and angle in radians
  * Params:
@@ -316,5 +328,5 @@ unittest {
                          0, 1, 0, 0,
                          0, 0, 0, 1]) ));
 }
-
++/
 // TODO More usefull functions, etc...
