@@ -19,6 +19,7 @@ alias Vec4f = Vector!(float, 4); /// Alias of a 4d Vector with floats
  * N-Dimensional Vector over a FloatPoint type, where N must be 2,3 or 4
  */
 public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
+nothrow:
   static enum size_t dim = dim_; /// Vector Dimension
 
   static assert(dim >= 2 && dim <= 4, "Not valid dimension size.");
@@ -29,14 +30,22 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
     package T[dim] coor; /// Vector coords like Array
 
     struct {
-      static if (dim >= 1)
+      static if (dim >= 1) {
         T x; /// X coord
-      static if (dim >= 2)
+        alias r = x;
+      }
+      static if (dim >= 2) {
         T y; /// Y coord
-      static if (dim >= 3)
+        alias g = y;
+      }
+      static if (dim >= 3) {
         T z; /// Z coord
-      static if (dim >= 4)
+        alias b = z;
+      }
+      static if (dim >= 4) {
         T w; /// W coord
+        alias a = w;
+      }
     }
   }
   // Consts
@@ -69,7 +78,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
    *	z = Z coord
    *	w = W coord (scale factor in 3d math)
    */
-  this(in T x, in T y = 0, in T z = 0, in T w = 1) {
+  @nogc this(in T x, in T y = 0, in T z = 0, in T w = 1) pure {
     this.x = x;
     this.y = y;
     static if (dim >= 3)
@@ -84,7 +93,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
    * Params:
    *	xs = Array with coords
    */
-  this(in T[] xs) {
+  this(in T[] xs) pure {
     size_t l = xs.length > dim ? dim : xs.length;
     this.coor[0 .. l] = xs[0 .. l].dup;
     if (l < dim) {
@@ -102,7 +111,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   /**
    * Returns i coord of this vector
    */
-  T opIndex(size_t i) const {
+  @nogc T opIndex(size_t i) pure const {
     return coor[i];
   }
 
@@ -116,7 +125,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   /**
    * Returns the actual length of this Vector
    */
-  @property T length() const {
+  @property @nogc T length() pure const {
     import std.math : sqrt;
 
     return sqrt(sq_length);
@@ -125,7 +134,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   /**
    * Returns the actual squared length of this Vector
    */
-  @property T sq_length() const {
+  @property @nogc T sq_length() pure const {
     return this * this;
   }
 
@@ -136,7 +145,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
    * Params:
    * rhs = Vector at rigth of '=='
    */
-  bool opEquals()(auto ref const Vector rhs) const {
+  @nogc bool opEquals()(auto ref const Vector rhs) pure const {
     if (x != rhs.x)
       return false;
     static if (dim >= 2) {
@@ -166,7 +175,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
    *
    * See: std.math : approxEqual
    */
-  bool approxEqual()(auto ref const Vector rhs, T maxRelDiff = 1e-2, T maxAbsDiff = 1e-05) const {
+  @nogc bool approxEqual()(auto ref const Vector rhs, T maxRelDiff = 1e-2, T maxAbsDiff = 1e-05) pure const {
     import std.math : approxEqual;
 
     static if (dim == 2) {
@@ -185,7 +194,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   /**
    * Define unary operators + and -
    */
-  Vector opUnary(string op)() const if (op == "+" || op == "-") {
+  @nogc Vector opUnary(string op)() pure const if (op == "+" || op == "-") {
     static if (dim == 2) {
       return Vector(mixin(op ~ "x"), mixin(op ~ "y"));
     } else static if (dim == 3) {
@@ -198,7 +207,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   /**
    * Define binary operator + and -
    */
-  Vector opBinary(string op)(auto ref const Vector rhs) if (op == "+" || op == "-") {
+  @nogc Vector opBinary(string op)(auto ref const Vector rhs) pure const if (op == "+" || op == "-") {
     static if (dim == 2) {
       return Vector(mixin("x" ~ op ~ "rhs.x"), mixin("y" ~ op ~ "rhs.y"));
     } else static if (dim == 3) {
@@ -212,7 +221,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   /**
    * Define Scalar multiplication
    */
-  Vector opBinary(string op)(in T rhs) const if (op == "*" || op == "/") {
+  @nogc Vector opBinary(string op)(in T rhs) pure const if (op == "*" || op == "/") {
     static if (dim == 2) {
       return Vector(mixin("x" ~ op ~ "rhs"), mixin("y" ~ op ~ "rhs"));
     } else static if (dim == 3) {
@@ -226,7 +235,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   /**
    * Define Scalar multiplication
    */
-  Vector opBinaryRight(string op)(in T rhs) const if(op == "*" || op == "/") {
+  @nogc Vector opBinaryRight(string op)(in T rhs) pure const if(op == "*" || op == "/") {
     static if (dim == 2) {
       return Vector(mixin("x" ~ op ~ "rhs"), mixin("y" ~ op ~ "rhs"));
     } else static if (dim == 3) {
@@ -240,7 +249,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   /**
    * Define Dot Product
    */
-  T opBinary(string op)(auto ref const Vector rhs) const if (op == "*") {
+  @nogc T opBinary(string op)(auto ref const Vector rhs) pure const if (op == "*") {
     T tmp = 0;
     foreach (i, x; this.coor) {
       tmp += x * rhs.coor[i];
@@ -251,18 +260,22 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   /**
    * Define Cross Product for R3 (operation c = a & b )
    */
-  Vector opBinary(string op)(auto ref const Vector rhs) const
-      if (op == "&" && dim == 3) {
-    return Vector(coor[1] * rhs.coor[2] - coor[2] * rhs.coor[1],
-        coor[2] * rhs.coor[0] - coor[0] * rhs.coor[2], coor[0] * rhs.coor[1] - coor[1] * rhs
-        .coor[0]);
+  @nogc Vector opBinary(string op)(auto ref const Vector rhs) pure const
+  if (op == "&" && dim == 3) {
+    // dfmt off
+    return Vector(
+        coor[1] * rhs.coor[2] - coor[2] * rhs.coor[1],
+        coor[2] * rhs.coor[0] - coor[0] * rhs.coor[2],
+        coor[0] * rhs.coor[1] - coor[1] * rhs.coor[0]
+        );
+    // dfmt on
   }
 
   /**
   * It's a unitary vector (length == 1)
   * Returns : True if length approxEqual to 1.0
   */
-  @property bool isUnit() const {
+  @property @nogc bool isUnit() pure const {
     import std.math : approxEqual, abs;
 
     return approxEqual(abs(this.sq_length - 1.0), 0);
@@ -271,7 +284,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   /**
   * Normalize this vector
   */
-  void normalize() {
+  @nogc void normalize() {
     if (!isUnit()) {
       const T invL = 1 / this.length;
       static if (dim >= 2) {
@@ -288,7 +301,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   /**
   * Returns the unit vector of this vector
   */
-  @property Vector unit() const {
+  @property @nogc Vector unit() pure const {
     Vector ret = this;
     ret.normalize;
     return ret;
@@ -301,7 +314,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   * b = Vector where project vector a
   * Returns : A Vector that it's projection of Vector a over Vector b
   */
-  static Vector projectOnTo()(auto ref const Vector a, auto ref const Vector b) {
+  @nogc static Vector projectOnTo()(auto ref const Vector a, auto ref const Vector b) pure {
     const bNormalized = b.unit();
     Vector ret = b * (a * bNormalized);
     return ret;
@@ -313,7 +326,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   * b = Vector where project this vector
   * Returns : A Vector that it's projection of this Vector over Vector b
   */
-  Vector projectOnTo()(auto ref const Vector b) {
+  @nogc Vector projectOnTo()(auto ref const Vector b) pure {
     return this.projectOnTo(this, b);
   }
 
@@ -323,7 +336,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   *	b = Vector B
   * Returns : Distance between the point pointed by this vector and other point
   */
-  T distance()(auto ref const Vector b) {
+  @nogc T distance()(auto ref const Vector b) pure {
     auto d = this - b;
     return d.length;
   }
@@ -336,7 +349,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   * Returns : Squared distance between the point pointed by this vector and
   *   other point
   */
-  T sq_distance()(auto ref const Vector b) {
+  @nogc T sq_distance()(auto ref const Vector b) pure {
     auto d = this - b;
     return d.sq_length;
   }
@@ -348,7 +361,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   * Returns : A vector that is the rotation of this vector
   */
   static if (dim == 2) {
-    Vector rotate(real angle) const {
+    @nogc Vector rotate(real angle) pure const {
       import std.math : sin, cos;
 
       return Vector(x * cos(angle) - y * sin(angle), x * sin(angle) + y * cos(angle));
@@ -358,10 +371,17 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   // Misc **********************************************************************
 
   /**
+   * Return a pointer of the internal array
+   */
+  @property @nogc T* ptr() pure {
+    return this.coor.ptr;
+  }
+
+  /**
   * Checks that the vector not have a weird NaN value
   * Returns : True if this vector not have a NaN value
   */
-  @property bool isOk() const {
+  @property @nogc bool isOk() pure const {
     import std.math : isNaN;
 
     if (isNaN(x) || isNaN(y))
@@ -380,7 +400,7 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   * Returns : True if this vector have finite values (not infinite value or
   *   NaNs)
   */
-  @property bool isFinite() const {
+  @property @nogc bool isFinite() pure const {
     import std.math : isFinite;
 
     if (isFinite(x) && isFinite(y)) {
@@ -401,8 +421,6 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   */
   Tout opCast(Tout)() if (isVector!(Tout)) {
     import std.conv : to;
-
-    static assert(isVector!(Tout), "This type not is a Vector");
 
     Tout newVector = void;
     auto i = 0;
@@ -426,27 +444,28 @@ public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
   }
 
   /**
-  * Returns a string representation of this vector
-  */
+   * Returns a string representation of this vector
+   */
   string toString() {
     import std.conv : to;
-
-    string ret = "[" ~ to!string(x) ~ ", " ~ to!string(y);
-    static if (dim >= 3)
-      ret ~= ", " ~ to!string(z);
-    static if (dim >= 4)
-      ret ~= ", " ~ to!string(w);
-    ret ~= "]";
-    return ret;
+    try {
+      string ret = "[" ~ to!string(x) ~ ", " ~ to!string(y);
+      static if (dim >= 3)
+        ret ~= ", " ~ to!string(z);
+      static if (dim >= 4)
+        ret ~= ", " ~ to!string(w);
+      ret ~= "]";
+      return ret;
+    } catch (Exception ex) {
+      assert(false); // This never should happen
+    }
   }
-
 }
 
 /**
 * Say if a thing it's a Vector
 */
 template isVector(T) {
-  //immutable bool isVector = is(T == Vector);
   immutable bool isVector = __traits(compiles, () {
     T t;
     static assert(T.dim >= 2 && T.dim <= 4);
@@ -460,6 +479,10 @@ template isVector(T) {
     // TODO : Should test for methods ?
   });
 }
+
+static assert(Vec2f.sizeof == 8);
+static assert(Vec3d.sizeof == 24);
+static assert(Vec4f.sizeof == 16);
 
 unittest {
   Vec2r v1 = Vec2r(0, 2);
@@ -644,9 +667,9 @@ unittest {
   assert(r2 == Vec2d(5, 4));
 }
 
-
 unittest {
   const v1 = Vec2f(5, 7);
   assert(isVector!(typeof(v1))); // Yep it's a Vector
   assert(!isVector!(int));
 }
+

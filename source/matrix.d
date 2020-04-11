@@ -256,7 +256,7 @@ struct Matrix(T, size_t dim_)
   /**
   * Define binary operator + and -
   */
-  Matrix opBinary(string op)(auto ref const Matrix rhs) const 
+  Matrix opBinary(string op)(auto ref const Matrix rhs) const
       if ((op == "+" || op == "-") && dim >= 2 && dim <= 4) {
     import std.conv : to;
 
@@ -675,19 +675,18 @@ struct Matrix(T, size_t dim_)
   }
 
   /**
-   * Return a pointer of a copy internal array
+   * Return a pointer of the internal array
    */
-  @property T* ptr() {
-    return cell.dup.ptr;
+  @property T* ptr() pure nothrow {
+    return this.cell.ptr;
   }
 
   unittest {
     auto m = Mat3f.IDENTITY;
     auto pt = m.ptr;
     pt[0] = 5;
-    assert(m[0, 0] != 5);
+    assert(m[0, 0] == 5);
     assert(pt[0] == 5);
-    assert(pt[4] == 1);
   }
 
   /**
