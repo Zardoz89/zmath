@@ -3,66 +3,69 @@ Defines a Vector of float point typefrom 2 to 4 dimension
 */
 module zmath.vector;
 
-alias Vector!(real,2) Vec2r; /// Alias of a 2d Vector with reals
-alias Vector!(real,3) Vec3r; /// Alias of a 3d Vector with reals
-alias Vector!(real,4) Vec4r; /// Alias of a 4d Vector with reals
+alias Vector!(real, 2) Vec2r; /// Alias of a 2d Vector with reals
+alias Vector!(real, 3) Vec3r; /// Alias of a 3d Vector with reals
+alias Vector!(real, 4) Vec4r; /// Alias of a 4d Vector with reals
 
-alias Vector!(double,2) Vec2d; /// Alias of a 2d Vector with doubles
-alias Vector!(double,3) Vec3d; /// Alias of a 3d Vector with doubles
-alias Vector!(double,4) Vec4d; /// Alias of a 4d Vector with doubles
+alias Vector!(double, 2) Vec2d; /// Alias of a 2d Vector with doubles
+alias Vector!(double, 3) Vec3d; /// Alias of a 3d Vector with doubles
+alias Vector!(double, 4) Vec4d; /// Alias of a 4d Vector with doubles
 
-alias Vector!(float,2) Vec2f; /// Alias of a 2d Vector with floats
-alias Vector!(float,3) Vec3f; /// Alias of a 3d Vector with floats
-alias Vector!(float,4) Vec4f; /// Alias of a 4d Vector with floats
+alias Vector!(float, 2) Vec2f; /// Alias of a 2d Vector with floats
+alias Vector!(float, 3) Vec3f; /// Alias of a 3d Vector with floats
+alias Vector!(float, 4) Vec4f; /// Alias of a 4d Vector with floats
 
 /**
 * N-Dimensional Vector over a FloatPoint type, where N must be 2,3 or 4
 */
-public struct Vector(T, size_t dim_)
-if (__traits(isFloating, T) ) {
-  static enum size_t dim = dim_;    /// Vector Dimension
+public struct Vector(T, size_t dim_) if (__traits(isFloating, T)) {
+  static enum size_t dim = dim_; /// Vector Dimension
 
-  static assert (dim >= 2 && dim <= 4, "Not valid dimension size.");
-  static assert (__traits(isFloating, T), "Type not is a Float Point type.");
-  static assert (is(T : real), "Type not is like a Float Point type.");
+  static assert(dim >= 2 && dim <= 4, "Not valid dimension size.");
+  static assert(__traits(isFloating, T), "Type not is a Float Point type.");
+  static assert(is(T : real), "Type not is like a Float Point type.");
 
   union {
     package T[dim] coor; /// Vector coords like Array
 
     struct {
-      static if( dim >= 1) T x;
-      static if( dim >= 2) T y;
-      static if( dim >= 3) T z;
-      static if( dim >= 4) T w;
+      static if (dim >= 1)
+        T x;
+      static if (dim >= 2)
+        T y;
+      static if (dim >= 3)
+        T z;
+      static if (dim >= 4)
+        T w;
     }
   }
   // Consts
   static if (dim == 2) { // for R2
-    public static enum Vector!(T,2) ZERO = Vector!(T,2)(0, 0);  ///Origin
-    public static enum Vector!(T,2) X_AXIS = Vector!(T,2)(1, 0); ///X Axis in R2
-    public static enum Vector!(T,2) Y_AXIS = Vector!(T,2)(0, 1); ///Y Axis in R2
+    public static enum Vector!(T, 2) ZERO = Vector!(T, 2)(0, 0); ///Origin
+    public static enum Vector!(T, 2) X_AXIS = Vector!(T, 2)(1, 0); ///X Axis in R2
+    public static enum Vector!(T, 2) Y_AXIS = Vector!(T, 2)(0, 1); ///Y Axis in R2
   }
 
   static if (dim == 3) { // for R3
-    public static enum Vector!(T,3) ZERO = Vector!(T,3)(0, 0, 0); ///Origin
+    public static enum Vector!(T, 3) ZERO = Vector!(T, 3)(0, 0, 0); ///Origin
     /**X Axis in R3 */
-    public static enum Vector!(T,3) X_AXIS = Vector!(T,3)(1, 0, 0);
+    public static enum Vector!(T, 3) X_AXIS = Vector!(T, 3)(1, 0, 0);
     /**Y Axis in R3 */
-    public static enum Vector!(T,3) Y_AXIS = Vector!(T,3)(0, 1, 0);
+    public static enum Vector!(T, 3) Y_AXIS = Vector!(T, 3)(0, 1, 0);
     /**Z Axis in R3 */
-    public static enum Vector!(T,3) Z_AXIS = Vector!(T,3)(0, 0, 1);
+    public static enum Vector!(T, 3) Z_AXIS = Vector!(T, 3)(0, 0, 1);
   }
 
   static if (dim == 4) { // for R4
-    public static enum Vector!(T,4) ZERO = Vector!(T,4)(0, 0, 0, 0); /// Origin
+    public static enum Vector!(T, 4) ZERO = Vector!(T, 4)(0, 0, 0, 0); /// Origin
     /**X Axis in R4 */
-    public static enum Vector!(T,4) X_AXIS = Vector!(T,4)(1, 0, 0, 0);
+    public static enum Vector!(T, 4) X_AXIS = Vector!(T, 4)(1, 0, 0, 0);
     /**Y Axis in R4 */
-    public static enum Vector!(T,4) Y_AXIS = Vector!(T,4)(0, 1, 0, 0);
+    public static enum Vector!(T, 4) Y_AXIS = Vector!(T, 4)(0, 1, 0, 0);
     /**Z Axis in R4 */
-    public static enum Vector!(T,4) Z_AXIS = Vector!(T,4)(0, 0, 1, 0);
+    public static enum Vector!(T, 4) Z_AXIS = Vector!(T, 4)(0, 0, 1, 0);
     /**W Axis in R4 (used like a scale factor with 3d Maths with 4d Matrixes)*/
-    public static enum Vector!(T,4) W_AXIS = Vector!(T,4)(0, 0, 0, 1);
+    public static enum Vector!(T, 4) W_AXIS = Vector!(T, 4)(0, 0, 0, 1);
   }
 
   /**
@@ -90,27 +93,27 @@ if (__traits(isFloating, T) ) {
   *	xs = Array with coords
   */
   this(in T[] xs) {
-    size_t l = xs.length > dim? dim : xs.length;
-    this.coor[0..l] = xs[0..l].dup;
-    if (l <dim) {
-      static if (dim <4) {
-        this.coor[l..dim] = 0;
+    size_t l = xs.length > dim ? dim : xs.length;
+    this.coor[0 .. l] = xs[0 .. l].dup;
+    if (l < dim) {
+      static if (dim < 4) {
+        this.coor[l .. dim] = 0;
       } else {
-        this.coor[l..dim-1] = 0;
+        this.coor[l .. dim - 1] = 0;
         w = 1;
       }
     }
   }
 
   unittest {
-    Vec2r v1 = Vec2r(0,2);
-    auto v2 = Vec2r(2,0);
-    auto v3 = Vec2r([1,1]);
-    float[] arr = [5,20.1,0,10,20];
+    Vec2r v1 = Vec2r(0, 2);
+    auto v2 = Vec2r(2, 0);
+    auto v3 = Vec2r([1, 1]);
+    float[] arr = [5, 20.1, 0, 10, 20];
     auto v4 = Vec4f(arr);
 
-    assert (v2.x == 2);   // By Coordinate name
-    assert (v2.coor[0] == 2); // By direct access to array (only internal use)
+    assert(v2.x == 2); // By Coordinate name
+    assert(v2.coor[0] == 2); // By direct access to array (only internal use)
   }
 
   // Basic Properties **********************************************************
@@ -118,7 +121,9 @@ if (__traits(isFloating, T) ) {
   /**
   * Returns i coord of this vector
   */
-  T opIndex(size_t i) const { return coor[i];}
+  T opIndex(size_t i) const {
+    return coor[i];
+  }
 
   /**
   * Assigns a value to a i coord
@@ -132,9 +137,9 @@ if (__traits(isFloating, T) ) {
   */
   @property T length() const {
     import std.math : sqrt;
+
     return sqrt(sq_length);
   }
-
 
   /**
   * Returns the actual squared length of this Vector
@@ -144,13 +149,13 @@ if (__traits(isFloating, T) ) {
   }
 
   unittest {
-    auto v = Vec3f(10,0,0);
-    auto v2 = Vec4d(1,1,1,1);
-    assert (v2[0] == 1); // By opIndex
+    auto v = Vec3f(10, 0, 0);
+    auto v2 = Vec4d(1, 1, 1, 1);
+    assert(v2[0] == 1); // By opIndex
     v2[0] = 123;
-    assert (v2[0] == 123); // Assign by opIndex
-    assert (v.length == 10.0);
-    assert (Vec4d(1,1,1,1).sq_length == 4);
+    assert(v2[0] == 123); // Assign by opIndex
+    assert(v.length == 10.0);
+    assert(Vec4d(1, 1, 1, 1).sq_length == 4);
   }
 
   // Operations ****************************************************************
@@ -161,7 +166,8 @@ if (__traits(isFloating, T) ) {
   * rhs = Vector at rigth of '=='
   */
   bool opEquals()(auto ref const Vector rhs) const {
-    if (x != rhs.x) return false;
+    if (x != rhs.x)
+      return false;
     static if (dim >= 2) {
       if (y != rhs.y) {
         return false;
@@ -191,118 +197,117 @@ if (__traits(isFloating, T) ) {
   */
   bool approxEqual()(auto ref const Vector rhs, T maxRelDiff = 1e-2, T maxAbsDiff = 1e-05) const {
     import std.math : approxEqual;
+
     static if (dim == 2) {
-      return approxEqual(x, rhs.x, maxRelDiff, maxAbsDiff) && approxEqual(y, rhs.y, maxRelDiff, maxAbsDiff);
+      return approxEqual(x, rhs.x, maxRelDiff, maxAbsDiff) && approxEqual(y,
+          rhs.y, maxRelDiff, maxAbsDiff);
     } else static if (dim == 3) {
-      return approxEqual(x, rhs.x, maxRelDiff, maxAbsDiff) && approxEqual(y, rhs.y, maxRelDiff, maxAbsDiff)
-              && approxEqual(z, rhs.z, maxRelDiff, maxAbsDiff);
+      return approxEqual(x, rhs.x, maxRelDiff, maxAbsDiff) && approxEqual(y, rhs.y,
+          maxRelDiff, maxAbsDiff) && approxEqual(z, rhs.z, maxRelDiff, maxAbsDiff);
     } else static if (dim == 4) {
-      return approxEqual(x, rhs.x, maxRelDiff, maxAbsDiff) && approxEqual(y, rhs.y, maxRelDiff, maxAbsDiff)
-              && approxEqual(z, rhs.z, maxRelDiff, maxAbsDiff) && approxEqual(w, rhs.w, maxRelDiff, maxAbsDiff);
+      return approxEqual(x, rhs.x, maxRelDiff, maxAbsDiff) && approxEqual(y, rhs.y, maxRelDiff,
+          maxAbsDiff) && approxEqual(z, rhs.z, maxRelDiff, maxAbsDiff)
+        && approxEqual(w, rhs.w, maxRelDiff, maxAbsDiff);
     }
   }
 
   unittest {
     // Check equality
-    auto v1 =  Vec4f(4, 2, 1, 0);
+    auto v1 = Vec4f(4, 2, 1, 0);
     auto v2 = Vec4f(4, 2, 3, 1);
     auto v3 = Vec4f(4, 2, 1, 0);
     auto v4 = Vec4f(4, 2, 1.00001, 0);
-    assert (v2 != v1);
-    assert (v1 == v1);
-    assert (v1 == Vec4f(4, 2, 1, 0));
-    assert (v3 == v1);
-    assert (v1 != v4);
-    assert (v1.approxEqual(v1));
-    assert (! v1.approxEqual(v2));
-    assert (v1.approxEqual(v4));
-    assert (v1.approxEqual(Vec4f(4, 2, 1, 0)));
+    assert(v2 != v1);
+    assert(v1 == v1);
+    assert(v1 == Vec4f(4, 2, 1, 0));
+    assert(v3 == v1);
+    assert(v1 != v4);
+    assert(v1.approxEqual(v1));
+    assert(!v1.approxEqual(v2));
+    assert(v1.approxEqual(v4));
+    assert(v1.approxEqual(Vec4f(4, 2, 1, 0)));
   }
-
 
   /**
   * Define unary operators + and -
   */
-  Vector opUnary(string op) () const
-  if (op == "+" || op == "-") {
+  Vector opUnary(string op)() const if (op == "+" || op == "-") {
     static if (dim == 2) {
-      return Vector( mixin(op~"x"), mixin(op~"y"));
+      return Vector(mixin(op ~ "x"), mixin(op ~ "y"));
     } else static if (dim == 3) {
-      return Vector( mixin(op~"x"), mixin(op~"y"), mixin(op~"z"));
+      return Vector(mixin(op ~ "x"), mixin(op ~ "y"), mixin(op ~ "z"));
     } else static if (dim == 4) {
-      return Vector( mixin(op~"x"), mixin(op~"y"), mixin(op~"z"), mixin(op~"w"));
+      return Vector(mixin(op ~ "x"), mixin(op ~ "y"), mixin(op ~ "z"), mixin(op ~ "w"));
     }
   }
 
   unittest {
     // Check change of sign
-    auto v = Vec2r([1,1]);
+    auto v = Vec2r([1, 1]);
     auto n = -v;
-    assert (n.x == -1);
-    assert (n.y == -1);
+    assert(n.x == -1);
+    assert(n.y == -1);
   }
-
 
   /**
   * Define binary operator + and -
   */
-  Vector opBinary(string op) (auto ref const Vector rhs)
-  if (op == "+" || op == "-") {
+  Vector opBinary(string op)(auto ref const Vector rhs) if (op == "+" || op == "-") {
     static if (dim == 2) {
-      return Vector( mixin("x"~op~"rhs.x"), mixin("y"~op~"rhs.y"));
+      return Vector(mixin("x" ~ op ~ "rhs.x"), mixin("y" ~ op ~ "rhs.y"));
     } else static if (dim == 3) {
-      return Vector( mixin("x"~op~"rhs.x"), mixin("y"~op~"rhs.y"), mixin("z"~op~"rhs.z"));
+      return Vector(mixin("x" ~ op ~ "rhs.x"), mixin("y" ~ op ~ "rhs.y"), mixin("z" ~ op ~ "rhs.z"));
     } else static if (dim == 4) {
-      return Vector( mixin("x"~op~"rhs.x"), mixin("y"~op~"rhs.y"), mixin("z"~op~"rhs.z"), mixin("w"~op~"rhs.w"));
+      return Vector(mixin("x" ~ op ~ "rhs.x"), mixin("y" ~ op ~ "rhs.y"),
+          mixin("z" ~ op ~ "rhs.z"), mixin("w" ~ op ~ "rhs.w"));
     }
-   }
+  }
 
   unittest {
     // Check addition
-    auto v1 = Vec4d(1,2,3,4);
-    auto v2 = Vec4d(1,1,1,1);
+    auto v1 = Vec4d(1, 2, 3, 4);
+    auto v2 = Vec4d(1, 1, 1, 1);
     auto v12 = v1 + v2;
     auto v21 = v2 + v1;
 
     // Symetry
     assert(v12 == v21);
     // Value
-    assert(v12 == Vec4d(2,3,4,5));
+    assert(v12 == Vec4d(2, 3, 4, 5));
 
     // Check subtraction
     auto v1m2 = v1 - v2;
-    assert(v1m2 == Vec4d(0,1,2,3));
+    assert(v1m2 == Vec4d(0, 1, 2, 3));
     // Subtraction asimetry
     auto v2m1 = v2 - v1;
-    assert(v2m1 == Vec4d(0,-1,-2,-3));
+    assert(v2m1 == Vec4d(0, -1, -2, -3));
   }
   /**
   * Define Scalar multiplication
   */
-  Vector opBinary(string op) (in T rhs) const
-  if (op == "*"  || op == "/") {
+  Vector opBinary(string op)(in T rhs) const if (op == "*" || op == "/") {
     static if (dim == 2) {
-      return Vector( mixin("x" ~op~ "rhs"), mixin("y" ~op~ "rhs"));
+      return Vector(mixin("x" ~ op ~ "rhs"), mixin("y" ~ op ~ "rhs"));
     } else static if (dim == 3) {
-      return Vector( mixin("x" ~op~ "rhs"), mixin("y" ~op~ "rhs"), mixin("z" ~op~ "rhs"));
+      return Vector(mixin("x" ~ op ~ "rhs"), mixin("y" ~ op ~ "rhs"), mixin("z" ~ op ~ "rhs"));
     } else static if (dim == 4) {
-      return Vector( mixin("x" ~op~ "rhs"), mixin("y" ~op~ "rhs"), mixin("z" ~op~ "rhs"), mixin("w" ~op~ "rhs"));
+      return Vector(mixin("x" ~ op ~ "rhs"), mixin("y" ~ op ~ "rhs"),
+          mixin("z" ~ op ~ "rhs"), mixin("w" ~ op ~ "rhs"));
     }
   }
 
   unittest {
     // Product by Scalar
-    auto vten = Vec4r(0,1,2,3) * 10.0L;
-    assert(vten == Vec4r(0,10,20,30));
+    auto vten = Vec4r(0, 1, 2, 3) * 10.0L;
+    assert(vten == Vec4r(0, 10, 20, 30));
     vten = vten / 2.0L;
-    assert(vten == Vec4r(0,5,10,15));
+    assert(vten == Vec4r(0, 5, 10, 15));
   }
 
   /**
   * Define Dot Product
   */
-  T opBinary(string op) (auto ref const Vector rhs) const
-  if (op == "*" ) {
+  T opBinary(string op)(auto ref const Vector rhs) const if (op == "*") {
     T tmp = 0;
     foreach (i, x; this.coor) {
       tmp += x * rhs.coor[i];
@@ -312,39 +317,39 @@ if (__traits(isFloating, T) ) {
 
   unittest {
     // Dot Product and length
-    auto v1 = Vec4f(10,1,0,0);
-    auto v2 = Vec4f(1,1,1,0);
+    auto v1 = Vec4f(10, 1, 0, 0);
+    auto v2 = Vec4f(1, 1, 1, 0);
     auto v2dotv1 = v2 * v1;
     assert(v2dotv1 == 11.0);
-    v2 = Vec4f(0,1,1,0);
-    v2dotv1 = v2 * Vec4f(10,0,1,0);
+    v2 = Vec4f(0, 1, 1, 0);
+    v2dotv1 = v2 * Vec4f(10, 0, 1, 0);
     assert(v2dotv1 == 1.0);
   }
 
   /**
   * Define Cross Product for R3 (operation c = a & b )
   */
-  Vector opBinary(string op) (auto ref const Vector rhs) const
-  if (op == "&" && dim == 3)  {
-    return Vector( coor[1]*rhs.coor[2] - coor[2]*rhs.coor[1],
-                  coor[2]*rhs.coor[0] - coor[0]*rhs.coor[2],
-                  coor[0]*rhs.coor[1] - coor[1]*rhs.coor[0]);
+  Vector opBinary(string op)(auto ref const Vector rhs) const 
+      if (op == "&" && dim == 3) {
+    return Vector(coor[1] * rhs.coor[2] - coor[2] * rhs.coor[1],
+        coor[2] * rhs.coor[0] - coor[0] * rhs.coor[2], coor[0] * rhs.coor[1] - coor[1] * rhs
+        .coor[0]);
   }
 
   unittest {
     // Cross product
-    auto r3v1 = Vec3r(0,0,10);
-    auto r3v2 = Vec3r(2,0,2);
+    auto r3v1 = Vec3r(0, 0, 10);
+    auto r3v2 = Vec3r(2, 0, 2);
     auto cross0 = r3v1 & r3v1;
     auto cross12 = r3v1 & r3v2;
     auto cross21 = r3v2 & r3v1;
 
-    assert (cross0.length == 0);
-    assert (cross12.length == 20.0);
-    assert (cross21.length == 20.0);
+    assert(cross0.length == 0);
+    assert(cross12.length == 20.0);
+    assert(cross21.length == 20.0);
 
-    assert (cross12 == Vec3r(0,20.0L, 0));
-    assert (cross21 == Vec3r(0,-20.0L, 0));
+    assert(cross12 == Vec3r(0, 20.0L, 0));
+    assert(cross21 == Vec3r(0, -20.0L, 0));
   }
 
   /**
@@ -353,7 +358,8 @@ if (__traits(isFloating, T) ) {
   */
   @property bool isUnit() const {
     import std.math : approxEqual, abs;
-    return approxEqual (abs( this.sq_length - 1.0), 0 );
+
+    return approxEqual(abs(this.sq_length - 1.0), 0);
   }
 
   /**
@@ -363,12 +369,13 @@ if (__traits(isFloating, T) ) {
     if (!isUnit()) {
       real l = 1 / this.length;
       static if (dim >= 2) {
-        x = x *l; y = y *l;
+        x = x * l;
+        y = y * l;
       }
       static if (dim >= 3)
-        z = z *l;
+        z = z * l;
       static if (dim == 4)
-        w = w *l;
+        w = w * l;
     }
   }
 
@@ -383,15 +390,15 @@ if (__traits(isFloating, T) ) {
 
   unittest {
     // Unitary Vector
-    auto v = Vec4f(10,10,10,10);
+    auto v = Vec4f(10, 10, 10, 10);
     Vec4f uv = v;
     uv.normalize();
-    auto uv2 =  Vec4f(3,3,3,3);
+    auto uv2 = Vec4f(3, 3, 3, 3);
     uv2.normalize();
-    assert (uv == uv2);
-    assert (uv == Vec4f(.5,.5,.5,.5));
-    assert (!v.isUnit());
-    assert (uv.isUnit());
+    assert(uv == uv2);
+    assert(uv == Vec4f(.5, .5, .5, .5));
+    assert(!v.isUnit());
+    assert(uv.isUnit());
   }
 
   /**
@@ -401,10 +408,10 @@ if (__traits(isFloating, T) ) {
   * b = Vector where project vector a
   * Returns : A Vector that it's projection of Vector a over Vector b
   */
-  static Vector projectOnTo() (auto ref const Vector a, auto ref const Vector b) {
+  static Vector projectOnTo()(auto ref const Vector a, auto ref const Vector b) {
     const bNormalized = b.unit();
-    Vector ret = b * ( a * bNormalized);
-    return ret ;
+    Vector ret = b * (a * bNormalized);
+    return ret;
   }
 
   /**
@@ -413,16 +420,16 @@ if (__traits(isFloating, T) ) {
   * b = Vector where project this vector
   * Returns : A Vector that it's projection of this Vector over Vector b
   */
-  Vector projectOnTo() (auto ref const Vector b) {
+  Vector projectOnTo()(auto ref const Vector b) {
     return this.projectOnTo(this, b);
   }
 
   unittest {
     // Check projection
     auto b = Vec3f.X_AXIS;
-    auto a = Vec3f(1,20,-30);
+    auto a = Vec3f(1, 20, -30);
     auto proy = a.projectOnTo(b);
-    assert (proy == Vec3f.X_AXIS );
+    assert(proy == Vec3f.X_AXIS);
   }
 
   /**
@@ -431,7 +438,7 @@ if (__traits(isFloating, T) ) {
   *	b = Vector B
   * Returns : Distance between the point pointed by this vector and other point
   */
-  T distance() (auto ref const Vector b) {
+  T distance()(auto ref const Vector b) {
     auto d = this - b;
     return d.length;
   }
@@ -444,22 +451,22 @@ if (__traits(isFloating, T) ) {
   * Returns : Squared distance between the point pointed by this vector and
   *   other point
   */
-  T sq_distance() (auto ref const Vector b) {
+  T sq_distance()(auto ref const Vector b) {
     auto d = this - b;
     return d.sq_length;
   }
 
   unittest {
     // Test Distance
-    auto v1 = Vec4d(1,1,1,1);
-    auto v2 = Vec4d(-1,-1,-1,-1);
+    auto v1 = Vec4d(1, 1, 1, 1);
+    auto v2 = Vec4d(-1, -1, -1, -1);
     auto dis = v1.distance(v2);
     auto dis_sq = v1.sq_distance(v2);
-    assert (dis == 4 );
-    assert (dis_sq == 16 );
+    assert(dis == 4);
+    assert(dis_sq == 16);
 
     dis = v1.distance(Vec4d(-1, -1, -1, -1));
-    assert (dis == 4 );
+    assert(dis == 4);
   }
 
   /**
@@ -469,22 +476,24 @@ if (__traits(isFloating, T) ) {
   * Returns : A vector that is the rotation of this vector
   */
   static if (dim == 2) {
-    Vector rotate (real angle) const {
+    Vector rotate(real angle) const {
       import std.math : sin, cos;
-      return Vector( x * cos(angle) - y * sin(angle), x * sin(angle) + y * cos(angle) );
+
+      return Vector(x * cos(angle) - y * sin(angle), x * sin(angle) + y * cos(angle));
     }
   }
 
   unittest {
     import std.math : PI_2;
+
     // Check Rotation in R2
-    auto v = Vec2f(10,0);
+    auto v = Vec2f(10, 0);
     auto rot90 = v.rotate(PI_2);
     auto rotn90 = v.rotate(-PI_2);
-    assert (rot90.length == v.length);
-    assert (rotn90.length == v.length);
-    assert (rot90.approxEqual(Vec2f(0,10)));
-    assert (rotn90.approxEqual(Vec2f(0,-10)));
+    assert(rot90.length == v.length);
+    assert(rotn90.length == v.length);
+    assert(rot90.approxEqual(Vec2f(0, 10)));
+    assert(rotn90.approxEqual(Vec2f(0, -10)));
   }
 
   // Misc **********************************************************************
@@ -495,11 +504,15 @@ if (__traits(isFloating, T) ) {
   */
   @property bool isOk() const {
     import std.math : isNaN;
-    if (isNaN(x) || isNaN(y)) return false;
+
+    if (isNaN(x) || isNaN(y))
+      return false;
     static if (dim >= 3)
-      if (isNaN(z)) return false;
+      if (isNaN(z))
+        return false;
     static if (dim >= 4)
-      if (isNaN(w)) return false;
+      if (isNaN(w))
+        return false;
     return true;
   }
 
@@ -510,11 +523,14 @@ if (__traits(isFloating, T) ) {
   */
   @property bool isFinite() const {
     import std.math : isFinite;
+
     if (isFinite(x) && isFinite(y)) {
       static if (dim >= 3)
-        if (! isFinite(z)) return false;
+        if (!isFinite(z))
+          return false;
       static if (dim >= 4)
-        if (! isFinite(w)) return false;
+        if (!isFinite(w))
+          return false;
       return true;
     } else {
       return false;
@@ -526,33 +542,33 @@ if (__traits(isFloating, T) ) {
     Vec4d vNaN;
     assert(!vNaN.isOk);
     assert(!vNaN.isFinite);
-    Vec4d vOK = Vec4d(1,2,3,4);
+    Vec4d vOK = Vec4d(1, 2, 3, 4);
     assert(vOK.isOk);
     assert(vOK.isFinite);
-    Vec4d vInf = Vec4d(1.0 /0.0, 10, 0, 1);
-    assert (!vInf.isFinite);
-    assert (vInf.isOk);
+    Vec4d vInf = Vec4d(1.0 / 0.0, 10, 0, 1);
+    assert(!vInf.isFinite);
+    assert(vInf.isOk);
   }
 
   /**
   * Casting method to convert to other vector types
   */
-  Tout opCast( Tout ) ()
-  if (isVector!(Tout)) {
-    import std.conv: to;
+  Tout opCast(Tout)() if (isVector!(Tout)) {
+    import std.conv : to;
 
-    static assert (isVector!(Tout), "This type not is a Vector");
+    static assert(isVector!(Tout), "This type not is a Vector");
 
-    Tout newVector = void; auto i = 0;
-    static if (is (typeof(newVector.x) == typeof(this.x)))  {
-      for (; i < dim && i< Tout.dim; i++)
-        newVector.coor[i] =  coor[i];
+    Tout newVector = void;
+    auto i = 0;
+    static if (is(typeof(newVector.x) == typeof(this.x))) {
+      for (; i < dim && i < Tout.dim; i++)
+        newVector.coor[i] = coor[i];
     } else {
-      for (; i < dim && i< Tout.dim; i++)
-        newVector.coor[i] =  to!(typeof(newVector.x))(coor[i]);
+      for (; i < dim && i < Tout.dim; i++)
+        newVector.coor[i] = to!(typeof(newVector.x))(coor[i]);
     }
 
-    static if (Tout.dim >=3 && dim < 3) // Expands a small vector to a bigger
+    static if (Tout.dim >= 3 && dim < 3) // Expands a small vector to a bigger
       newVector.z = 0; // Z by default to 0
 
     static if (Tout.dim == 4 && dim < 4) {
@@ -568,33 +584,34 @@ if (__traits(isFloating, T) ) {
   */
   string toString() {
     import std.conv : to;
-    string ret = "["~ to!string(x) ~", "~ to!string(y);
-    static if (dim >=3)
-      ret ~= ", "~ to!string(z);
-    static if (dim >=4)
-      ret ~= ", "~ to!string(w);
+
+    string ret = "[" ~ to!string(x) ~ ", " ~ to!string(y);
+    static if (dim >= 3)
+      ret ~= ", " ~ to!string(z);
+    static if (dim >= 4)
+      ret ~= ", " ~ to!string(w);
     ret ~= "]";
     return ret;
   }
 
   unittest {
     // Check casting
-    auto v2 = Vec2r(10,-10);
+    auto v2 = Vec2r(10, -10);
     auto v2f = cast(Vec2f) v2;
     auto v2d = cast(Vec2d) v2;
-    auto vecf = Vec2f(10,10);
+    auto vecf = Vec2f(10, 10);
     //auto vec4d = toImpl!(Vec4d, Vec2f) (vecf);
     //auto vec4d = to!Vec4d (vecf); // Not yet
     auto vec4d = cast(Vec4d) vecf;
     assert(is(typeof(v2f) == Vec2f));
     assert(is(typeof(v2d) == Vec2d));
     assert(is(typeof(vec4d) == Vec4d));
-    auto r2 = Vec2d(5,4);
+    auto r2 = Vec2d(5, 4);
     auto r4 = cast(Vec4d) r2;
-    assert (is(typeof(r4) == Vec4d));
-    assert (r4 == Vec4d(5,4,0,1));
+    assert(is(typeof(r4) == Vec4d));
+    assert(r4 == Vec4d(5, 4, 0, 1));
     r2 = cast(Vec2d) r4;
-    assert (r2 == Vec2d(5,4));
+    assert(r2 == Vec2d(5, 4));
   }
 
 }
@@ -602,28 +619,24 @@ if (__traits(isFloating, T) ) {
 /**
 * Say if a thing it's a Vector
 */
-template isVector(T)
-{
+template isVector(T) {
   //immutable bool isVector = is(T == Vector);
-  immutable bool isVector = __traits(compiles,
-        (){
-            T t;
-            static assert(T.dim >= 2 && T.dim <= 4);
-            auto coor = t.coor;
-            auto x = t.x;
-            auto y = t.y;
-            static if(t.dim >= 3)
-                auto z = t.z;
-            static if(t.dim >= 4)
-                auto w = t.w;
-            // TODO : Should test for methods ?
-        }
-    );
+  immutable bool isVector = __traits(compiles, () {
+    T t;
+    static assert(T.dim >= 2 && T.dim <= 4);
+    auto coor = t.coor;
+    auto x = t.x;
+    auto y = t.y;
+    static if (t.dim >= 3)
+      auto z = t.z;
+    static if (t.dim >= 4)
+      auto w = t.w;
+    // TODO : Should test for methods ?
+  });
 }
 
 unittest {
-  const v1 = Vec2f(5,7);
-  assert (isVector!(typeof(v1))); // Yep it's a Vector
-  assert (! isVector!(int));
+  const v1 = Vec2f(5, 7);
+  assert(isVector!(typeof(v1))); // Yep it's a Vector
+  assert(!isVector!(int));
 }
-
