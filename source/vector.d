@@ -33,17 +33,20 @@ nothrow:
       static if (dim >= 1) {
         T x; /// X coord
         alias r = x; /// R component
-        alias head = x; /// Euler head angle
+        alias roll = x; /// Euler roll angle
+        alias bank = x; /// Euler roll angle
       }
       static if (dim >= 2) {
         T y; /// Y coord
         alias g = y; /// G component
-        alias elevation = y; /// Euler elevation angle
+        alias pitch = y; /// Euler pith angle
+        alias attidue = y; /// Euler pith angle
       }
       static if (dim >= 3) {
         T z; /// Z coord
         alias b = z; /// B component
-        alias bank = z; /// Euler bank angle
+        alias yaw = z; /// Euler yaw angle
+        alias heading = z; /// Euler yaw angle
       }
       static if (dim >= 4) {
         T w; /// W coord

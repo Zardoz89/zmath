@@ -340,15 +340,15 @@ unittest {
       to!string(m.determinant) ~ "\n" ~ m.toString());
   assert (m.approxEqual(Mat4f.IDENTITY));
 
-  auto q = Qua_f(0,0, PI_2);
+  auto q = Qua_f(0, 0, PI_2);
   m = rotMat(q);
   assert (approxEqual(m.determinant , 1) );
   // dfmt off
   assert (m.approxEqual( Mat4f([
-          1, 0, 0, 0,
-          0, 0,-1, 0,
-          0, 1, 0, 0,
-          0, 0, 0, 1
+          0, -1, 0, 0,
+          1,  0, 0, 0,
+          0,  0, 1, 0,
+          0,  0, 0, 1
   ])));
   // dfmt on
 }

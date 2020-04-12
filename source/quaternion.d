@@ -113,27 +113,29 @@ nothrow:
   /**
   * Creates a new Quaternion from  Euler angles
   * Params :
-  * heading = Rotation around Z axis in radians
-  *	elevation = Rotation around Y axis in radians
-  *	bank = Rotation around X axis in radians
+  * roll = Rotation around X axis in radians (aka bank)
+  *	pitch = Rotation around Y axis in radians (aka attitude)
+  *	yaw = Rotation around Z axis in radians (aka heading)
   *	Returns:
   *	Quaternion that represents a rotation
   */
-  @nogc this(U)(in U heading, in U elevation, in U bank) if (is(U : real)) {
+  @nogc this(U)(U roll, U pitch, U yaw) if (__traits(isFloating, U)) {
     import std.math : sin, cos;
 
-    const c1 = cos(heading / 2); // x =s1s2*c3  + c1c2 *s3
-    const s1 = sin(heading / 2); // y =s1*c2*c3 + c1*s2*s3
-    const c2 = cos(elevation / 2); // z =c1*s2*c3 - s1*c2*s3
-    const s2 = sin(elevation / 2); // w =c1c2*c3 - s1s2*s3
-    const c3 = cos(bank / 2);
-    const s3 = sin(bank / 2);
-    const c1c2 = c1 * c2;
-    const s1s2 = s1 * s2;
-    i = s1s2 * c3 + c1c2 * s3;
-    j = s1 * c2 * c3 + c1 * s2 * s3;
-    k = c1 * s2 * c3 - s1 * c2 * s3;
-    w = c1c2 * c3 - s1s2 * s3;
+    const sinPitch = sin(pitch / 2.0);
+    const cosPitch = cos(pitch / 2.0);
+    const sinYaw = sin(yaw / 2.0);
+    const cosYaw = cos(yaw / 2.0);
+    const sinRoll = sin(roll / 2.0);
+    const cosRoll = cos(roll / 2.0);
+
+    const cosPitchCosYaw = cosPitch * cosYaw;
+    const sinPitchSinYaw = sinPitch * sinYaw;
+
+    this.i = sinRoll * cosPitchCosYaw - cosRoll * sinPitchSinYaw;
+    this.j = cosRoll * sinPitch * cosYaw + sinRoll * cosPitch * sinYaw;
+    this.k = cosRoll * cosPitch * sinYaw - sinRoll * sinPitch * cosYaw;
+    this.w = cosRoll * cosPitchCosYaw + sinRoll * sinPitchSinYaw;
   }
 
   // Basic Properties **********************************************************
@@ -312,37 +314,49 @@ nothrow:
   }
 
   /**
-  * Returns a Vector with x = Heading, y= Elevation and z = Bank
+  * Returns a Vector with euler's angles
   *	Params:
   *	q = Quaternion that represents a rotation
   * Returns:
   *	Vector with Euler angles of rotation in radians
+  *
+  * TODO: Improve using code from here to avoid requiring pre-normalize the quaternion
+  * http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
   */
   @nogc Vector!(T, 3) toEuler() pure const
   in {
     assert(this.isUnit());
   }
   body {
-    import std.math : asin, atan2, PI_2;
+    /*
+    roll = Rotation around X axis in radians
+    pitch = Rotation around Y axis in radians
+    yaw = Rotation around Z axis in radians
+    */
+    import std.math : asin, atan2, abs, PI_2;
 
-    T head = void, elev = void, bank = void;
-    auto att = 2 * x * y + 2 * z * w;
-    if (att >= 1) { // North Pole
-      head = 2 * atan2(x, w);
-      elev = PI_2;
-      bank = 0;
+    // roll (x-axis rotation)
+    auto sinr_cosp = 2 * (w * x + y * z);
+    auto cosr_cosp = 1 - 2 * (x * x + y * y);
+    auto roll = atan2(sinr_cosp, cosr_cosp);
 
-    } else if (att <= -1) { // South Pole
-      head = -2 * atan2(x, w);
-      elev = -PI_2;
-      bank = 0;
+    // pitch (y-axis rotation)
+    T pitch = void;
+    auto sinp = 2 * (w * y - z * x);
+    if (sinp >= 1) { // North pole
+      pitch = PI_2;
+    } else if (sinp <= -1) { // South pole
+      pitch = -PI_2;
     } else {
-      head = atan2(2 * y * w - 2 * x * z, 1 - 2 * y * y - 2 * z * z);
-      elev = asin(att);
-      bank = atan2(2 * x * w - 2 * y * z, 1 - 2 * x * x - 2 * z * z);
+      pitch = asin(sinp);
     }
 
-    return Vector!(T, 3)(head, elev, bank);
+     // yaw (z-axis rotation)
+    auto siny_cosp = 2 * (w * z + x * y);
+    auto cosy_cosp = 1 - 2 * (y * y + z * z);
+    auto yaw = atan2(siny_cosp, cosy_cosp);
+
+    return Vector!(T, 3)(roll, pitch, yaw);
   }
 
   /**
@@ -446,22 +460,30 @@ unittest {
 
 unittest {
   import std.math : PI_2, PI_4;
+  import std.conv : to;
 
-  auto q_bank = Qua_d(0, 0, PI_2);
-  assert(q_bank.approxEqual(Qua_d(0.707107, 0, 0, 0.707107)));
-  assert(q_bank.isUnit());
+  auto qRoll = Qua_d(PI_4, 0, 0);
+  assert(qRoll.isUnit());
+  assert(qRoll.toEuler().approxEqual(Vec3d(PI_4, 0, 0)));
 
-  auto q_head = Qua_d(PI_4, 0, 0);
-  assert(q_head.isUnit());
-  assert(q_head.toEuler().approxEqual(Vec3d(PI_4, 0, 0)));
+  auto qPitch = Qua_d(0, -PI_4, 0);
+  assert(qPitch.isUnit());
+  assert(qPitch.toEuler().approxEqual(Vec3d(0, -PI_4, 0)), qPitch.toEuler().toString());
 
-  auto q_elev = Qua_d(0, -PI_4, 0);
-  assert(q_elev.isUnit());
-  assert(q_elev.toEuler().approxEqual(Vec3d(0, -PI_4, 0)));
+  auto qYaw = Qua_d(0, 0, PI_2);
+  assert(qYaw.isUnit());
+  assert(qYaw.approxEqual(Qua_d(0, 0, 0.707107, 0.707107)), qYaw.toString());
+  assert(qYaw.toEuler().approxEqual(Vec3d(0, 0, PI_2)), qYaw.toEuler().toString());
 
   auto q_r = Qua_d(1, -PI_4, PI_4);
   assert(q_r.isUnit());
   assert(q_r.toEuler().approxEqual(Vec3d(1, -PI_4, PI_4)));
+
+  // Example from http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
+  auto q = Qua_d(0.707107, 0, 0, 0.707107);
+  assert(q.isUnit());
+  assert(q.toEuler().approxEqual(Vec3d(PI_2, 0, 0)), q.toEuler().toString());
+
 }
 
 unittest {
@@ -523,29 +545,33 @@ unittest {
   import std.math : PI_2, PI_4;
 
   // Check rotation with quaternion
-  auto q_bank = Qua_d(0, 0, PI_2);
-  auto q_head = Qua_d(PI_4, 0, 0);
-  auto q_elev = Qua_d(0, -PI_4, 0);
+  auto qRoll = Qua_d(PI_4, 0, 0);
+  auto qPitch = Qua_d(0, -PI_4, 0);
+  auto qYaw = Qua_d(0, 0, PI_2);
   auto v1 = Vec3d(1, 1, 1);
+
   auto v4d = cast(Vec4d) v1;
-  auto v2 = q_bank.rotate(v1);
-  assert(v2.approxEqual(Vec3d(1, -1, 1)));
-  auto v3 = q_head.rotate(v1);
-  assert(v3.approxEqual(Vec3d(1.41421, 1, 0)));
-  auto v4 = q_elev.rotate(v1);
-  assert(v4.approxEqual(Vec3d(1.41421, 0, 1)));
-  auto v5 = q_elev.rotate(v4d);
-  assert(v5.approxEqual(Vec4d(1.41421, 0, 1)));
+  auto v2 = qRoll.rotate(v1);
+  assert(v2.approxEqual(Vec3d(1, 0, 1.41421)), v2.toString());
+
+  auto v3 = qPitch.rotate(v1);
+  assert(v3.approxEqual(Vec3d(0, 1, 1.41421)), v3.toString());
+
+  auto v4 = qYaw.rotate(v1);
+  assert(v4.approxEqual(Vec3d(-1, 1, 1)), v4.toString());
+
+  auto v5 = qPitch.rotate(v4d);
+  assert(v5.approxEqual(Vec4d(0, 1, 1.41421, 1)), v5.toString());
 }
 
 unittest {
   import std.math : approxEqual, PI_4;
 
   // Check conversion to Axis/angle
-  auto q_head = Qua_d(PI_4, 0, 0);
+  auto qRoll = Qua_d(PI_4, 0, 0);
   double angle;
-  auto axis = q_head.toAxisAngle(angle);
-  assert(axis.approxEqual(Vec3d(0, 1, 0)));
+  auto axis = qRoll.toAxisAngle(angle);
+  assert(axis.approxEqual(Vec3d(1, 0, 0)));
   assert(approxEqual(angle, PI_4));
 }
 
@@ -577,28 +603,41 @@ unittest {
   import std.math : approxEqual, PI_2, PI_4;
 
   // Generation of Rotation matrix
-  auto q_bank = Qua_d(0, 0, PI_2);
-  auto q_head = Qua_d(PI_4, 0, 0);
-  auto q_elev = Qua_d(0, -PI_4, 0);
-  auto m = cast(Mat4d) q_bank;
+  const qRoll = Qua_d(PI_4, 0, 0);
+  const qPitch = Qua_d(0, -PI_4, 0);
+  const qYaw = Qua_d(0, 0, PI_2);
+  auto m = cast(Mat4d) qRoll;
   assert(approxEqual(m.determinant, 1));
+  // dfmt off
   assert(m.approxEqual(Mat4d([
-          1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1
-  ])));
+          1,  0       ,  0       ,  0,
+          0,  0.707107, -0.707107,  0,
+          0,  0.707107,  0.707107,  0,
+          0,  0       ,  0       ,  1
+  ])), m.toString());
+  // dfmt on
 
-  m = cast(Mat4d) q_head;
+  m = cast(Mat4d) qPitch;
   assert(approxEqual(m.determinant, 1));
+  // dfmt off
   assert(m.approxEqual(Mat4d([
-          0.707107, 0, 0.707107, 0, 0, 1, 0, 0, -0.707107, 0, 0.707107, 0, 0, 0, 0,
-          1
-  ])));
+          0.707107, 0, -0.707107, 0,
+          0       , 1,         0, 0,
+          0.707107, 0,  0.707107, 0,
+          0       , 0,         0, 1
+  ])), m.toString());
+  // dfmt on
 
-  m = cast(Mat4d) q_elev;
+  m = cast(Mat4d) qYaw;
   assert(approxEqual(m.determinant, 1));
+  // dfmt off
   assert(m.approxEqual(Mat4d([
-          0.707107, 0.707107, 0, 0, -0.707107, 0.707107, 0, 0, 0, 0, 1, 0, 0, 0, 0,
-          1
-  ])));
+          0, -1, 0, 0,
+          1,  0, 0, 0,
+          0,  0, 1, 0,
+          0,  0, 0, 1
+  ])), m.toString());
+  // dfmt on
 }
 
 
