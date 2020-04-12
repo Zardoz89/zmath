@@ -8,14 +8,15 @@ module zmath.quaternion;
 import zmath.vector;
 import zmath.matrix;
 
-alias Quaternion!float Qua_f; /// Alias of a Quaternion with floats
-alias Quaternion!double Qua_d; /// Alias of a Quaternion with doubles
-alias Quaternion!real Qua_r; /// Alias of a Quaternion with reals
+alias Qua_f = Quaternion!float; /// Alias of a Quaternion with floats
+alias Qua_d = Quaternion!double; /// Alias of a Quaternion with doubles
+alias Qua_r = Quaternion!real; /// Alias of a Quaternion with reals
 
 /**
 * Quaternion over a FloatPoint type,
 */
-public struct Quaternion(T = float) if (__traits(isFloating, T)) {
+public struct Quaternion(T = floatt) if (__traits(isFloating, T)) {
+nothrow:
   static assert(__traits(isFloating, T));
 
   static enum size_t dim = 4; /// Quaternion Dimension
@@ -86,17 +87,6 @@ public struct Quaternion(T = float) if (__traits(isFloating, T)) {
     coor = v.coor.dup;
   }
 
-  unittest {
-    auto q = Qua_r(1, 2, 3, 4);
-    assert(q.coor == [1, 2, 3, 4]);
-    real[] arr = [4.0, 3.0, 2.0, 1.0, 20.0, 30.0];
-    q = Qua_r(arr);
-    arr[0] = 7.7;
-    assert(q.coor == [4, 3, 2, 1]);
-    q = Qua_r(Vec4r(1, 2, 3, 4));
-    assert(q.coor == [1, 2, 3, 4]);
-  }
-
   /**
   * Creates a Quaternion from a 3d Vector and angle
   *	Params:
@@ -105,21 +95,15 @@ public struct Quaternion(T = float) if (__traits(isFloating, T)) {
   *	Returns:
   *	Quaternion that represents a rotation
   */
-  this(Vector!(T, 3) v, in T angle) {
+  @nogc this(U)(Vector!(T, 3) v, in U angle) if (is(U : real)) {
     import std.math : sin, cos;
 
     v.normalize();
-    auto sin_2 = sin(angle / 2.0L);
+    const sin_2 = sin(angle / 2.0L);
     i = v.x * sin_2;
     j = v.y * sin_2;
     k = v.z * sin_2;
     w = cos(angle / 2.0L);
-  }
-
-  unittest {
-    auto q_AxisX = Qua_d(Vec3d.X_AXIS, 0);
-    assert(q_AxisX == Qua_d(0, 0, 0, 1)); // TODO Do more checks
-    assert(q_AxisX.isUnit());
   }
 
   /**
@@ -131,38 +115,21 @@ public struct Quaternion(T = float) if (__traits(isFloating, T)) {
   *	Returns:
   *	Quaternion that represents a rotation
   */
-  this(in T heading, in T elevation, in T bank) {
+  @nogc this(U)(in U heading, in U elevation, in U bank) if (is(U : real)) {
     import std.math : sin, cos;
 
-    auto c1 = cos(heading / 2); // x =s1s2*c3  + c1c2 *s3
-    auto s1 = sin(heading / 2); // y =s1*c2*c3 + c1*s2*s3
-    auto c2 = cos(elevation / 2); // z =c1*s2*c3 - s1*c2*s3
-    auto s2 = sin(elevation / 2); // w =c1c2*c3 - s1s2*s3
-    auto c3 = cos(bank / 2);
-    auto s3 = sin(bank / 2);
-    auto c1c2 = c1 * c2;
-    auto s1s2 = s1 * s2;
+    const c1 = cos(heading / 2); // x =s1s2*c3  + c1c2 *s3
+    const s1 = sin(heading / 2); // y =s1*c2*c3 + c1*s2*s3
+    const c2 = cos(elevation / 2); // z =c1*s2*c3 - s1*c2*s3
+    const s2 = sin(elevation / 2); // w =c1c2*c3 - s1s2*s3
+    const c3 = cos(bank / 2);
+    const s3 = sin(bank / 2);
+    const c1c2 = c1 * c2;
+    const s1s2 = s1 * s2;
     i = s1s2 * c3 + c1c2 * s3;
     j = s1 * c2 * c3 + c1 * s2 * s3;
     k = c1 * s2 * c3 - s1 * c2 * s3;
     w = c1c2 * c3 - s1s2 * s3;
-  }
-
-  unittest {
-    import std.math : PI_2, PI_4;
-
-    auto q_bank = Qua_d(0, 0, PI_2);
-    assert(q_bank.approxEqual(Qua_d(0.707107, 0, 0, 0.707107)));
-    assert(q_bank.isUnit());
-    auto q_head = Qua_d(PI_4, 0, 0);
-    assert(q_head.isUnit());
-    assert(q_head.toEuler().approxEqual(Vec3d(PI_4, 0, 0)));
-    auto q_elev = Qua_d(0, -PI_4, 0);
-    assert(q_elev.isUnit());
-    assert(q_elev.toEuler().approxEqual(Vec3d(0, -PI_4, 0)));
-    auto q_r = Qua_d(1, -PI_4, PI_4);
-    assert(q_r.isUnit());
-    assert(q_r.toEuler().approxEqual(Vec3d(1, -PI_4, PI_4)));
   }
 
   // Basic Properties **********************************************************
@@ -170,21 +137,21 @@ public struct Quaternion(T = float) if (__traits(isFloating, T)) {
   /**
   * Returns i coord of this vector
   */
-  T opIndex(size_t i) const {
+  @nogc T opIndex(size_t i) pure const {
     return coor[i];
   }
 
   /**
   * Assigns a value to a coord
   */
-  void opIndexAssign(T c, size_t i) {
+  @nogc void opIndexAssign(T c, size_t i) {
     coor[i] = c;
   }
 
   /**
   * Returns the actual length of this quaternion
   */
-  @property T length() const {
+  @property @nogc T length() pure const {
     import std.math : sqrt;
 
     return sqrt(sq_length);
@@ -193,15 +160,8 @@ public struct Quaternion(T = float) if (__traits(isFloating, T)) {
   /**
   * Returns the actual squared length of this quaternion
   */
-  @property T sq_length() const {
+  @property @nogc T sq_length() pure const {
     return x * x + y * y + z * z + w * w;
-  }
-
-  unittest {
-    auto q = Qua_f(10, 0, 0, 0);
-    assert(q.sq_length == 100);
-    q = Qua_f(1, 1, 1, 1);
-    assert(q.length == 2);
   }
 
   // Operations ****************************************************************
@@ -209,22 +169,26 @@ public struct Quaternion(T = float) if (__traits(isFloating, T)) {
   /**
   * Define Equality
   */
-  bool opEquals()(auto ref const Quaternion rhs) const {
-    if (x != rhs.x)
+  @nogc bool opEquals()(auto ref const Quaternion rhs) pure const {
+    if (x != rhs.x) {
       return false;
-    if (y != rhs.y)
+    }
+    if (y != rhs.y) {
       return false;
-    if (z != rhs.z)
+    }
+    if (z != rhs.z) {
       return false;
-    if (w != rhs.w)
+    }
+    if (w != rhs.w) {
       return false;
+    }
     return true;
   }
 
   /**
   * Approximated equality with controlable precision
   */
-  bool approxEqual()(auto ref const Quaternion rhs, T maxRelDiff = 1e-02, T maxAbsDiff = 1e-05) const {
+  @nogc bool approxEqual()(auto ref const Quaternion rhs, T maxRelDiff = 1e-02, T maxAbsDiff = 1e-05) pure const {
     import std.math : approxEqual;
 
     return approxEqual(x, rhs.x, maxRelDiff, maxAbsDiff) && approxEqual(y, rhs.y, maxRelDiff,
@@ -232,49 +196,26 @@ public struct Quaternion(T = float) if (__traits(isFloating, T)) {
       && approxEqual(w, rhs.w, maxRelDiff, maxAbsDiff);
   }
 
-  unittest {
-    auto q1 = Qua_d(1, 2, 3, 4);
-    auto qj = Qua_d(0, 1, 0, 0);
-    assert(q1 == q1);
-    assert(q1 != qj);
-    assert(qj != q1);
-    assert(q1.approxEqual(q1) && !q1.approxEqual(qj));
-  }
-
   /**
   * Define unary operators + and -
   */
-  Quaternion opUnary(string op)() const if (op == "+" || op == "-") {
+  @nogc Quaternion opUnary(string op)() pure const if (op == "+" || op == "-") {
     return Quaternion(mixin(op ~ "x"), mixin(op ~ "y"), mixin(op ~ "z"), mixin(op ~ "w"));
   }
 
   /**
   * Define binary operator + and -
   */
-  Quaternion opBinary(string op)(auto ref const Quaternion rhs) const 
+  @nogc Quaternion opBinary(string op)(auto ref const Quaternion rhs) pure const
       if (op == "+" || op == "-") {
     return Quaternion(mixin("x" ~ op ~ "rhs.x"), mixin("y" ~ op ~ "rhs.y"),
         mixin("z" ~ op ~ "rhs.z"), mixin("w" ~ op ~ "rhs.w"));
   }
 
-  unittest {
-    // Check addition / subtraction
-    auto qk = Qua_d(0, 0, 1, 0);
-    auto qj = Qua_d(0, 1, 0, 0);
-    auto qi = Qua_d(1, 0, 0, 0);
-    auto q1 = Qua_d(1, 1, 1, 1);
-    auto qki = qk + qi;
-    auto q1j = q1 + qj;
-    auto q1k = q1 - qk;
-    assert(qki == Qua_d(1, 0, 1, 0));
-    assert(q1j == Qua_d(1, 2, 1, 1));
-    assert(q1k == Qua_d(1, 1, 0, 1));
-  }
-
   /**
   * Define Scalar multiplication
   */
-  Quaternion opBinary(string op)(in T rhs) const if (op == "*") {
+  @nogc Quaternion opBinary(string op)(in T rhs) pure const if (op == "*") {
     return Quaternion(x * rhs, y * rhs, z * rhs, w * rhs);
   }
 
@@ -286,7 +227,7 @@ public struct Quaternion(T = float) if (__traits(isFloating, T)) {
   *	Quaternion result of hamilton product of <strong>this</strong> and rhs (this
 * rhs)
   */
-  Quaternion opBinary(string op)(auto ref const Quaternion rhs) const if (op == "*") {
+  @nogc Quaternion opBinary(string op)(auto ref const Quaternion rhs) pure const if (op == "*") {
     // (a1a2 − b1b2 − c1c2 − d1d2)w
     auto _w = w * rhs.w - x * rhs.x - y * rhs.y - z * rhs.z;
     // (a1b2 + b1a2 + c1d2 − d1c2)i
@@ -298,16 +239,6 @@ public struct Quaternion(T = float) if (__traits(isFloating, T)) {
     return Quaternion(_i, _j, _k, _w);
   }
 
-  unittest {
-    // Check Hamilton multiplication
-    auto qi = Qua_d(1, 0, 0, 0);
-    auto q1 = Qua_d(1, 1, 1, 1);
-    auto q1i = q1 * qi;
-    auto qi1 = qi * q1;
-    assert(q1i == Qua_d(1, 1, -1, -1)); // TODO Check this values
-    assert(qi1 == Qua_d(1, -1, 1, -1));
-  }
-
   /**
   * Obtain conjugate of a Quaternion
   * Params:
@@ -315,22 +246,14 @@ public struct Quaternion(T = float) if (__traits(isFloating, T)) {
   * Return:
   * Conjugate Quaternion of q
   */
-  Quaternion conj() const {
+  @nogc Quaternion conj() pure const {
     return Quaternion(-x, -y, -z, w);
-  }
-
-  unittest {
-    auto q1 = Qua_d(1, 1, 1, 1);
-    auto conj_q1 = q1.conj();
-    assert(conj_q1 == Qua_d(-1, -1, -1, 1));
-    auto qr = q1 * q1.conj();
-    assert(qr == Qua_d(0, 0, 0, 4));
   }
 
   /**
   * It's a unitary Quaternion (length == 1)
   */
-  @property bool isUnit() const {
+  @property @nogc bool isUnit() pure const {
     import std.math : approxEqual, abs;
 
     return approxEqual(abs(this.sq_length - 1.0), 0);
@@ -339,9 +262,9 @@ public struct Quaternion(T = float) if (__traits(isFloating, T)) {
   /**
   * Normalize this Quaternion
   */
-  void normalize() {
+  @nogc void normalize() pure {
     if (!isUnit()) {
-      T l = 1 / this.length;
+      const T l = 1 / this.length;
       x = x * l;
       y = y * l;
       z = z * l;
@@ -349,39 +272,13 @@ public struct Quaternion(T = float) if (__traits(isFloating, T)) {
     }
   }
 
-  unittest {
-    auto q = Qua_r(10, 10, 1, 5);
-    assert(!q.isUnit);
-    q.normalize();
-    assert(q.isUnit);
-  }
-
   /**
   * Apply a 3d rotation Quaternion over a 3d/4d Vector
   */
-  V rotate(V)(auto ref const V v) const if (isVector!V && V.dim >= 3) {
+  V rotate(V)(auto ref const V v) pure const if (isVector!V && V.dim >= 3) {
     Quaternion resQua = Quaternion(v) * this.conj();
     resQua = this * resQua;
     return V(resQua.coor);
-  }
-
-  unittest {
-    import std.math : PI_2, PI_4;
-
-    // Check rotation with quaternion
-    auto q_bank = Qua_d(0, 0, PI_2);
-    auto q_head = Qua_d(PI_4, 0, 0);
-    auto q_elev = Qua_d(0, -PI_4, 0);
-    auto v1 = Vec3d(1, 1, 1);
-    auto v4d = cast(Vec4d) v1;
-    auto v2 = q_bank.rotate(v1);
-    assert(v2.approxEqual(Vec3d(1, -1, 1)));
-    auto v3 = q_head.rotate(v1);
-    assert(v3.approxEqual(Vec3d(1.41421, 1, 0)));
-    auto v4 = q_elev.rotate(v1);
-    assert(v4.approxEqual(Vec3d(1.41421, 0, 1)));
-    auto v5 = q_elev.rotate(v4d);
-    assert(v5.approxEqual(Vec4d(1.41421, 0, 1)));
   }
 
   // Misc **********************************************************************
@@ -394,7 +291,7 @@ public struct Quaternion(T = float) if (__traits(isFloating, T)) {
   *	Returns:
   *	Axis of rotation vector
   */
-  Vector!(T, 3) toAxisAngle(out T angle) const
+  @nogc Vector!(T, 3) toAxisAngle(out T angle) pure const
   in {
     assert(this.isUnit());
   }
@@ -410,17 +307,6 @@ public struct Quaternion(T = float) if (__traits(isFloating, T)) {
     return Vector!(T, 3)(i * inv_qw, j * inv_qw, k * inv_qw);
   }
 
-  unittest {
-    import std.math : approxEqual, PI_4;
-
-    // Check conversion to Axis/angle
-    auto q_head = Qua_d(PI_4, 0, 0);
-    double angle;
-    auto axis = q_head.toAxisAngle(angle);
-    assert(axis.approxEqual(Vec3d(0, 1, 0)));
-    assert(approxEqual(angle, PI_4));
-  }
-
   /**
   * Returns a Vector with x = Heading, y= Elevation and z = Bank
   *	Params:
@@ -428,7 +314,7 @@ public struct Quaternion(T = float) if (__traits(isFloating, T)) {
   * Returns:
   *	Vector with Euler angles of rotation in radians
   */
-  Vector!(T, 3) toEuler() const
+  @nogc Vector!(T, 3) toEuler() pure const
   in {
     assert(this.isUnit());
   }
@@ -455,18 +341,10 @@ public struct Quaternion(T = float) if (__traits(isFloating, T)) {
     return Vector!(T, 3)(head, elev, bank); // TODO: Return a tuple with 3 values ?
   }
 
-  unittest {
-    import std.math : PI_4;
-
-    auto q = Qua_d(PI_4, PI_4, PI_4);
-    auto rot = q.toEuler();
-    assert(rot.approxEqual(Vec3d(PI_4, PI_4, PI_4)));
-  }
-
   /**
   * Casting for convert between Quaternions
   */
-  Tout opCast(Tout)() if (isQuaternion!(Tout)) {
+  @nogc Tout opCast(Tout)() pure const if (isQuaternion!(Tout)) {
     import std.conv : to;
 
     Tout newQ;
@@ -480,26 +358,10 @@ public struct Quaternion(T = float) if (__traits(isFloating, T)) {
     return newQ;
   }
 
-  unittest {
-    auto q = Qua_d(1, 1, 1, 1);
-    auto qf = cast(Qua_f) q;
-    auto qreal = cast(Qua_r) q;
-    auto qd = cast(Qua_d) qf;
-
-    assert(is(typeof(qf) == Qua_f));
-    assert(is(typeof(qreal) == Qua_r));
-    assert(is(typeof(qd) == Qua_d));
-    for (auto i = 0; i < 4; i++) {
-      assert(qf[i] == 1);
-      assert(qreal[i] == 1);
-      assert(qd[i] == 1);
-    }
-  }
-
   /**
-  * Casting for make rotation Matrix
+  * Casting to rotation Matrix
   */
-  Tout opCast(Tout)() if (isMatrix!(Tout) && Tout.dim >= 3)
+  @nogc Tout opCast(Tout)() pure const if (isMatrix!(Tout) && Tout.dim >= 3)
   in {
     assert(this.isUnit());
   }
@@ -529,43 +391,16 @@ public struct Quaternion(T = float) if (__traits(isFloating, T)) {
     }
   }
 
-  unittest {
-    import std.math : approxEqual, PI_2, PI_4;
-
-    // Generation of Rotation matrix
-    auto q_bank = Qua_d(0, 0, PI_2);
-    auto q_head = Qua_d(PI_4, 0, 0);
-    auto q_elev = Qua_d(0, -PI_4, 0);
-    auto m = cast(Mat4d) q_bank;
-    assert(approxEqual(m.determinant, 1));
-    assert(m.approxEqual(Mat4d([
-          1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1
-        ])));
-
-    m = cast(Mat4d) q_head;
-    assert(approxEqual(m.determinant, 1));
-    assert(m.approxEqual(Mat4d([
-          0.707107, 0, 0.707107, 0, 0, 1, 0, 0, -0.707107, 0, 0.707107, 0, 0, 0, 0,
-          1
-        ])));
-
-    m = cast(Mat4d) q_elev;
-    assert(approxEqual(m.determinant, 1));
-    assert(m.approxEqual(Mat4d([
-          0.707107, 0.707107, 0, 0, -0.707107, 0.707107, 0, 0, 0, 0, 1, 0, 0, 0, 0,
-          1
-        ])));
-  }
-
   /**
   * Returns a string representation of this Quaternion
   */
   string toString() {
     import std.conv : to;
-
-    string ret = "[" ~ to!string(x) ~ ", " ~ to!string(y) ~ ", " ~ to!string(
-        z) ~ ", " ~ to!string(w) ~ "]";
-    return ret;
+    try {
+      return "[" ~ to!string(x) ~ ", " ~ to!string(y) ~ ", " ~ to!string(z) ~ ", " ~ to!string(w) ~ "]";
+    } catch (Exception ex) {
+      assert(false); // This never should happen
+    }
   }
 }
 
@@ -586,6 +421,178 @@ template isQuaternion(T) {
     // TODO : Should test for methods ?
   });
 }
+
+unittest {
+  auto q = Qua_r(1, 2, 3, 4);
+  assert(q.coor == [1, 2, 3, 4]);
+  real[] arr = [4.0, 3.0, 2.0, 1.0, 20.0, 30.0];
+  q = Qua_r(arr);
+  arr[0] = 7.7;
+  assert(q.coor == [4, 3, 2, 1]);
+  q = Qua_r(Vec4r(1, 2, 3, 4));
+  assert(q.coor == [1, 2, 3, 4]);
+}
+
+unittest {
+  auto q_AxisX = Qua_d(Vec3d.X_AXIS, 0);
+  assert(q_AxisX == Qua_d(0, 0, 0, 1)); // TODO Do more checks
+  assert(q_AxisX.isUnit());
+}
+
+unittest {
+  import std.math : PI_2, PI_4;
+
+  auto q_bank = Qua_d(0, 0, PI_2);
+  assert(q_bank.approxEqual(Qua_d(0.707107, 0, 0, 0.707107)));
+  assert(q_bank.isUnit());
+  auto q_head = Qua_d(PI_4, 0, 0);
+  assert(q_head.isUnit());
+  assert(q_head.toEuler().approxEqual(Vec3d(PI_4, 0, 0)));
+  auto q_elev = Qua_d(0, -PI_4, 0);
+  assert(q_elev.isUnit());
+  assert(q_elev.toEuler().approxEqual(Vec3d(0, -PI_4, 0)));
+  auto q_r = Qua_d(1, -PI_4, PI_4);
+  assert(q_r.isUnit());
+  assert(q_r.toEuler().approxEqual(Vec3d(1, -PI_4, PI_4)));
+}
+
+unittest {
+  auto q = Qua_f(10, 0, 0, 0);
+  assert(q.sq_length == 100);
+  q = Qua_f(1, 1, 1, 1);
+  assert(q.length == 2);
+}
+
+unittest {
+  auto q1 = Qua_d(1, 2, 3, 4);
+  auto qj = Qua_d(0, 1, 0, 0);
+  assert(q1 == q1);
+  assert(q1 != qj);
+  assert(qj != q1);
+  assert(q1.approxEqual(q1) && !q1.approxEqual(qj));
+}
+
+unittest {
+  // Check addition / subtraction
+  const qk = Qua_d(0, 0, 1, 0);
+  const qj = Qua_d(0, 1, 0, 0);
+  const qi = Qua_d(1, 0, 0, 0);
+  const q1 = Qua_d(1, 1, 1, 1);
+  const qki = qk + qi;
+  const q1j = q1 + qj;
+  const q1k = q1 - qk;
+  assert(qki == Qua_d(1, 0, 1, 0));
+  assert(q1j == Qua_d(1, 2, 1, 1));
+  assert(q1k == Qua_d(1, 1, 0, 1));
+}
+
+unittest {
+  // Check Hamilton multiplication
+  const qi = Qua_d(1, 0, 0, 0);
+  const q1 = Qua_d(1, 1, 1, 1);
+  const q1i = q1 * qi;
+  const qi1 = qi * q1;
+  assert(q1i == Qua_d(1, 1, -1, -1)); // TODO Check this values
+  assert(qi1 == Qua_d(1, -1, 1, -1));
+}
+
+unittest {
+  auto q1 = Qua_d(1, 1, 1, 1);
+  const conj_q1 = q1.conj();
+  assert(conj_q1 == Qua_d(-1, -1, -1, 1));
+  const qr = q1 * q1.conj();
+  assert(qr == Qua_d(0, 0, 0, 4));
+}
+
+unittest {
+  auto q = Qua_r(10, 10, 1, 5);
+  assert(!q.isUnit);
+  q.normalize();
+  assert(q.isUnit);
+}
+
+unittest {
+  import std.math : PI_2, PI_4;
+
+  // Check rotation with quaternion
+  auto q_bank = Qua_d(0, 0, PI_2);
+  auto q_head = Qua_d(PI_4, 0, 0);
+  auto q_elev = Qua_d(0, -PI_4, 0);
+  auto v1 = Vec3d(1, 1, 1);
+  auto v4d = cast(Vec4d) v1;
+  auto v2 = q_bank.rotate(v1);
+  assert(v2.approxEqual(Vec3d(1, -1, 1)));
+  auto v3 = q_head.rotate(v1);
+  assert(v3.approxEqual(Vec3d(1.41421, 1, 0)));
+  auto v4 = q_elev.rotate(v1);
+  assert(v4.approxEqual(Vec3d(1.41421, 0, 1)));
+  auto v5 = q_elev.rotate(v4d);
+  assert(v5.approxEqual(Vec4d(1.41421, 0, 1)));
+}
+
+unittest {
+  import std.math : approxEqual, PI_4;
+
+  // Check conversion to Axis/angle
+  auto q_head = Qua_d(PI_4, 0, 0);
+  double angle;
+  auto axis = q_head.toAxisAngle(angle);
+  assert(axis.approxEqual(Vec3d(0, 1, 0)));
+  assert(approxEqual(angle, PI_4));
+}
+
+unittest {
+  import std.math : PI_4;
+
+  auto q = Qua_d(PI_4, PI_4, PI_4);
+  auto rot = q.toEuler();
+  assert(rot.approxEqual(Vec3d(PI_4, PI_4, PI_4)));
+}
+
+unittest {
+  auto q = Qua_d(1, 1, 1, 1);
+  auto qf = cast(Qua_f) q;
+  auto qreal = cast(Qua_r) q;
+  auto qd = cast(Qua_d) qf;
+
+  assert(is(typeof(qf) == Qua_f));
+  assert(is(typeof(qreal) == Qua_r));
+  assert(is(typeof(qd) == Qua_d));
+  for (auto i = 0; i < 4; i++) {
+    assert(qf[i] == 1);
+    assert(qreal[i] == 1);
+    assert(qd[i] == 1);
+  }
+}
+
+unittest {
+  import std.math : approxEqual, PI_2, PI_4;
+
+  // Generation of Rotation matrix
+  auto q_bank = Qua_d(0, 0, PI_2);
+  auto q_head = Qua_d(PI_4, 0, 0);
+  auto q_elev = Qua_d(0, -PI_4, 0);
+  auto m = cast(Mat4d) q_bank;
+  assert(approxEqual(m.determinant, 1));
+  assert(m.approxEqual(Mat4d([
+          1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1
+  ])));
+
+  m = cast(Mat4d) q_head;
+  assert(approxEqual(m.determinant, 1));
+  assert(m.approxEqual(Mat4d([
+          0.707107, 0, 0.707107, 0, 0, 1, 0, 0, -0.707107, 0, 0.707107, 0, 0, 0, 0,
+          1
+  ])));
+
+  m = cast(Mat4d) q_elev;
+  assert(approxEqual(m.determinant, 1));
+  assert(m.approxEqual(Mat4d([
+          0.707107, 0.707107, 0, 0, -0.707107, 0.707107, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+          1
+  ])));
+}
+
 
 unittest {
   auto q = Qua_f(1, 2, 3, 4);
