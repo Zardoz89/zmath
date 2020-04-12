@@ -32,19 +32,22 @@ nothrow:
     struct {
       static if (dim >= 1) {
         T x; /// X coord
-        alias r = x;
+        alias r = x; /// R component
+        alias head = x; /// Euler head angle
       }
       static if (dim >= 2) {
         T y; /// Y coord
-        alias g = y;
+        alias g = y; /// G component
+        alias elevation = y; /// Euler elevation angle
       }
       static if (dim >= 3) {
         T z; /// Z coord
-        alias b = z;
+        alias b = z; /// B component
+        alias bank = z; /// Euler bank angle
       }
       static if (dim >= 4) {
         T w; /// W coord
-        alias a = w;
+        alias a = w; /// Alpha component
       }
     }
   }

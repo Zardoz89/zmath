@@ -22,7 +22,8 @@ nothrow:
   static enum size_t dim = 4; /// Quaternion Dimension
 
   union {
-    private T[4] coor; /// Quaternion coords in a rray
+    private T[4] coor; /// Quaternion coords in an array
+    private Vector!(T, 4) v; /// Quaternion like a vector
     struct {
       T i; /// i complex component
       T j; /// j complex component
@@ -71,20 +72,20 @@ nothrow:
   * Build a new Quaternion from a 3D Vector
   * w will be set to 1
   * Params:
-  *	v = Vector 3d
+  *	vec = Vector 3d
   */
-  this(in Vector!(T, 3) v) {
-    coor[0 .. 3] = v.coor.dup;
-    w = 1;
+  @nogc this(in Vector!(T, 3) vec) pure {
+    this.v = Vector!(T, 4)(vec.x, vec.y, vec.z);
+    this.w = 1;
   }
 
   /**
   * Build a new Quaternion from a 4D Vector
   * Params:
-  *	v = Vector 4d
+  *	vec = Vector 4d
   */
-  this(in Vector!(T, 4) v) {
-    coor = v.coor.dup;
+  @nogc this(in Vector!(T, 4) vec) pure {
+    this.v = vec;
   }
 
   /**
@@ -95,7 +96,10 @@ nothrow:
   *	Returns:
   *	Quaternion that represents a rotation
   */
-  @nogc this(U)(Vector!(T, 3) v, in U angle) if (is(U : real)) {
+  @nogc this(U)(Vector!(T, 3) v, U angle) if (is(U : real))
+  in {
+    assert(v.isOk, "Invalid vector");
+  } body {
     import std.math : sin, cos;
 
     v.normalize();
@@ -338,7 +342,7 @@ nothrow:
       bank = atan2(2 * x * w - 2 * y * z, 1 - 2 * x * x - 2 * z * z);
     }
 
-    return Vector!(T, 3)(head, elev, bank); // TODO: Return a tuple with 3 values ?
+    return Vector!(T, 3)(head, elev, bank);
   }
 
   /**
@@ -423,6 +427,7 @@ template isQuaternion(T) {
 }
 
 unittest {
+  // Ctors.
   auto q = Qua_r(1, 2, 3, 4);
   assert(q.coor == [1, 2, 3, 4]);
   real[] arr = [4.0, 3.0, 2.0, 1.0, 20.0, 30.0];
@@ -445,12 +450,15 @@ unittest {
   auto q_bank = Qua_d(0, 0, PI_2);
   assert(q_bank.approxEqual(Qua_d(0.707107, 0, 0, 0.707107)));
   assert(q_bank.isUnit());
+
   auto q_head = Qua_d(PI_4, 0, 0);
   assert(q_head.isUnit());
   assert(q_head.toEuler().approxEqual(Vec3d(PI_4, 0, 0)));
+
   auto q_elev = Qua_d(0, -PI_4, 0);
   assert(q_elev.isUnit());
   assert(q_elev.toEuler().approxEqual(Vec3d(0, -PI_4, 0)));
+
   auto q_r = Qua_d(1, -PI_4, PI_4);
   assert(q_r.isUnit());
   assert(q_r.toEuler().approxEqual(Vec3d(1, -PI_4, PI_4)));

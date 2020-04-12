@@ -523,6 +523,10 @@ template isMatrix(T) {
   });
 }
 
+static assert(Mat2f.sizeof == 4 * 2*2);
+static assert(Mat3d.sizeof == 8 * 3*3);
+static assert(Mat4f.sizeof == 4 * 4*4);
+
 unittest {
   // Fundamental Matrixes
   auto z = Mat4d.ZERO;
