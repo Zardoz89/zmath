@@ -118,7 +118,7 @@ in {
  * Creates a orthographic projection matrix
  * Params:
  * width = Width of visible zone
- * heigth = Heigth of visible zone
+ * height = Height of visible zone
  * deep = Deep of visible zone
  * Returns a orthographic projection matrix
  */

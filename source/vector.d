@@ -363,8 +363,8 @@ nothrow:
   /**
   * Rotation in R2
   * Params:
-  * axis = Rotation axis
-  * Returns : A vector that is the rotation of this vector
+  * angle = Rotation angle
+  * Returns : A new vector that is the rotation of this vector
   */
   static if (dim == 2) {
     @nogc Vector rotate(real angle) pure const {

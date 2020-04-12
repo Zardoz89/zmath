@@ -5,4 +5,12 @@ The main objetive it's be usefull for doing basic things with 2d / 3d job and us
 
 For any serius usage, I recomend the excelent and well maintained gfm library : https://github.com/d-gamedev-team/gfm
 
+## TODO:
+
+- More usefull math funtions
+- Basic 2d collision :
+  - Circle collision
+  - Aligned boxes
+  - Convex shapes
+- Use SIMD
 

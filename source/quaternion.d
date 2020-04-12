@@ -247,10 +247,6 @@ nothrow:
 
   /**
   * Obtain conjugate of a Quaternion
-  * Params:
-  *	q = Quaternion from were calc
-  * Return:
-  * Conjugate Quaternion of q
   */
   @nogc Quaternion conj() pure const {
     return Quaternion(-x, -y, -z, w);
@@ -292,7 +288,6 @@ nothrow:
   /**
   * Calc the Axis and angle of rotation of this Quaternion
   * Params:
-  *	q = Quaternion that represents a rotation
   *	angle = Set to angle of rotation
   *	Returns:
   *	Axis of rotation vector
@@ -315,8 +310,6 @@ nothrow:
 
   /**
   * Returns a Vector with euler's angles
-  *	Params:
-  *	q = Quaternion that represents a rotation
   * Returns:
   *	Vector with Euler angles of rotation in radians
   *
