@@ -38,8 +38,8 @@ unittest {
  * zMax = Far clipping plane
  * Returns a perspective projection matrix
  */
-M perspectiveMat(M=Mat4f, T=float, U=float, V=float, W=float)
-                          (T fov, U aspect, V zMin, W zMax)
+@nogc M perspectiveMat(M=Mat4f, T=float, U=float, V=float, W=float)
+                          (T fov, U aspect, V zMin, W zMax) pure nothrow
 if (is4dMat!M && isNumeric!T && isNumeric!U && isNumeric!V && isNumeric!W)
 in {
   import std.math : PI;
@@ -52,10 +52,10 @@ in {
   import std.math : tan;
 
   M mat = M.ZERO; // all set to 0
-  real yMax = zMin * tan(fov); // Max precision
-  real yMin = -yMax;
-  real xMax = yMax * aspect;
-  real xMin = -xMax;
+  const yMax = zMin * tan(fov);
+  const yMin = -yMax;
+  const xMax = yMax * aspect;
+  const xMin = -xMax;
 
   mat[0,0] = (2.0 * zMin) / (xMax - xMin);
   mat[1,1] = (2.0 * zMin) / (yMax - yMin);
@@ -75,8 +75,8 @@ unittest {
   const auto expected = Mat4d([
         0.75,  0,       0,  0,
            0,  1,       0,  0,
-           0,  0, -1.0202, -1,
-           0,  0, -2.0202,  0
+           0,  0, -1.0202, -2.0202,
+           0,  0, -1     ,  0
   ]);
   // dfmt on
   assert (proy.approxEqual(expected), "Expected\n" ~ expected.toString() ~ " but obtained\n" ~ proy.toString() );
@@ -94,8 +94,8 @@ unittest {
  * zMax = Far clipping plane
  * Returns a orthographic projection matrix
  */
-M orthoMat(M=Mat4f,T=float, U=float, V=float, W=float, X=float, Y=float)
-                    (T xMin, U xMax, V yMin, W yMax, X zMin = 0, Y zMax = 1)
+@nogc M orthoMat(M=Mat4f,T=float, U=float, V=float, W=float, X=float, Y=float)
+                    (T xMin, U xMax, V yMin, W yMax, X zMin = 0, Y zMax = 1) pure nothrow
 if (is4dMat!M && isNumeric!T && isNumeric!U && isNumeric!V && isNumeric!W
     && isNumeric!X && isNumeric!Y)
 in {
@@ -122,8 +122,8 @@ in {
  * deep = Deep of visible zone
  * Returns a orthographic projection matrix
  */
-M orthoMat(M=Mat4f,T=float, U=float, V=float)
-                  (T width =1, U height = 1, V deep = 1)
+@nogc M orthoMat(M=Mat4f,T=float, U=float, V=float)
+                  (T width =1, U height = 1, V deep = 1) pure nothrow
 if (is4dMat!M && isNumeric!T && isNumeric!U && isNumeric!V)
 in {
   assert (width > 0);
@@ -139,10 +139,10 @@ unittest {
   const ortho = orthoMat(100,75,100);
   // dfmt off
   const expected = Mat4f([
-      0.02,         0,     0, 0,
-         0, 0.0266667,     0, 0,
-         0,         0, -0.02, 0,
-        -0,        -0,    -1, 1
+      0.02,         0,     0,  0,
+         0, 0.0266667,     0,  0,
+         0,         0, -0.02, -1,
+        -0,        -0,     0,  1
   ]);
   // dfmt on
   assert (ortho.approxEqual(expected), "Expected\n" ~ expected.toString() ~ " but obtained\n" ~ ortho.toString() );
@@ -155,10 +155,12 @@ unittest {
  * v = 2d/3d Vector
  * Returns a translation matrix
  */
-M translateMat(M=Mat4f, V=Vec3f) (V v)
+@nogc M translateMat(M=Mat4f, V=Vec3f) (V v) pure nothrow
 if (isVector!V && V.dim <= 3 && is4dMat!M) {
   M m = M.IDENTITY;
-  m[3] = v; // internal cast in opIndexAssign set w=1 by default
+  m[0, 3] = v.x;
+  m[1, 3] = v.y;
+  m[2, 3] = v.z;
   return m;
 }
 
@@ -170,7 +172,7 @@ if (isVector!V && V.dim <= 3 && is4dMat!M) {
  * z = Z coord
  * Returns a translation matrix
  */
-M translateMat(M=Mat4f, T=float) (T x, T y, T z)
+@nogc M translateMat(M=Mat4f, T=float) (T x, T y, T z) pure nothrow
 if (is4dMat!M && is(T : real)) {
   return translateMat!(M, Vector!(T, 3))(Vector!(T, 3) (x,y,z));
 }
@@ -179,10 +181,12 @@ unittest {
   auto m1 = translateMat(1f, 2f, 3f);
   auto m2 = translateMat(Vec3f(1, 2, 3));
   assert(m1 == m2);
-  assert(m1[0,3] == 1);
-  assert(m1[1,3] == 2);
-  assert(m1[2,3] == 3);
-  assert(m1[3,3] == 1);
+  assert(m2 == Mat4f([
+        1, 0, 0, 1,
+        0, 1, 0, 2,
+        0, 0, 1, 3,
+        0, 0, 0, 1,
+  ]), "Failed with\n" ~ m2.toString);
 }
 
 /**
@@ -191,7 +195,7 @@ unittest {
  * s = scale factor
  * Returns a scale matrix
  */
-M scaleMat(M=Mat4f, T=float) (T s)
+@nogc M scaleMat(M=Mat4f, T=float) (T s) pure nothrow
 if (is4dMat!M && is(T : real)) {
   return M.IDENTITY * s;
 }
@@ -204,7 +208,7 @@ if (is4dMat!M && is(T : real)) {
  * z = Z axis scale
  * Returns a scale matrix
  */
-M scaleMat(M=Mat4f, T=float) (T x, T y, T z)
+@nogc M scaleMat(M=Mat4f, T=float) (T x, T y, T z) pure nothrow
 if (is4dMat!M && is(T : real)) {
   M m = M.IDENTITY;
   m[0,0] = x;
@@ -219,7 +223,7 @@ if (is4dMat!M && is(T : real)) {
  * v = Vector with scale factor. If is a 2d Vector, z axis scale factor is 1
  * Returns a scale matrix
  */
-M scaleMat(M=Mat4f, V=Vec3f) (V v)
+@nogc M scaleMat(M=Mat4f, V=Vec3f) (V v) pure nothrow
 if (isVector!V && V.dim <= 3 && is4dMat!M) {
   M m = M.IDENTITY;
   m[0,0] = v.x;
@@ -253,7 +257,6 @@ unittest {
   assert (m[3,3] == 1);
 }
 
-/+
 /**
  * Creates a rotation matrix from a axis and angle in radians
  * Params:
@@ -261,9 +264,10 @@ unittest {
  * angle = angle in radians
  * Returns a 3d rotation matrix
  */
-M rotMat(M=Mat4f, V=Vec3f, T=float) (V v, T angle)
-if (isVector!V && V.dim <= 3 && is4dMat!M && is(T : real)) {
+@nogc M rotMat(M=Mat4f, V=Vec3f, T=float) (V v, T angle) pure nothrow
+    if (isVector!V && V.dim <= 3 && is4dMat!M && __traits(isFloating, T)) {
   import std.math : approxEqual, sin, cos;
+
   auto mag = v.sq_length;
   if (mag == 0) {
     return M.IDENTITY;
@@ -271,32 +275,34 @@ if (isVector!V && V.dim <= 3 && is4dMat!M && is(T : real)) {
     v.normalize;
   }
 
-  auto s = sin(angle);
-  auto c = cos(angle);
+  const s = sin(angle);
+  const c = cos(angle);
+  const oneMinusC = 1.0 - c;
 
-  auto xx = v.x * v.x;
-  auto yy = v.y * v.y;
-  auto zz = v.z * v.z;
-  auto xy = v.x * v.y;
-  auto yz = v.y * v.z;
-  auto zx = v.z * v.x;
-  auto xs = v.x * v.s;
-  auto ys = v.y * v.s;
-  auto zs = v.z * v.s;
-  auto one_c = 1.0 - c;
+  const xx = v.x * v.x;
+  const yy = v.y * v.y;
+  const zz = v.z * v.z;
+
+  const xy = v.x * v.y;
+  const yz = v.y * v.z;
+  const zx = v.z * v.x;
+
+  const xs = v.x * s;
+  const ys = v.y * s;
+  const zs = v.z * s;
 
   M m = M.IDENTITY;
-  m[0,0] = (one_c * xx) + c;
-  m[0,1] = (one_c * xy) - zs;
-  m[0,2] = (one_c * zx) + ys;
+  m[0,0] = (oneMinusC * xx) + c;
+  m[0,1] = (oneMinusC * xy) - zs;
+  m[0,2] = (oneMinusC * zx) + ys;
 
-  m[1,0] = (one_c * xy) + zs;
-  m[1,1] = (one_c * yy) + c;
-  m[1,2] = (one_c * yz) - xs;
+  m[1,0] = (oneMinusC * xy) + zs;
+  m[1,1] = (oneMinusC * yy) + c;
+  m[1,2] = (oneMinusC * yz) - xs;
 
-  m[2,0] = (one_c * zx) - ys;
-  m[2,1] = (one_c * yz) + xs;
-  m[2,2] = (one_c * zz) + c;
+  m[2,0] = (oneMinusC * zx) - ys;
+  m[2,1] = (oneMinusC * yz) + xs;
+  m[2,2] = (oneMinusC * zz) + c;
 
   return m;
 }
@@ -310,7 +316,7 @@ if (isVector!V && V.dim <= 3 && is4dMat!M && is(T : real)) {
  * angle = angle in radians
  * Returns a 3d rotation matrix
  */
-M rotMat(M=Mat4f,T=float, U=float) (T x, T y, T z, U angle)
+@nogc M rotMat(M=Mat4f,T=float, U=float) (T x, T y, T z, U angle) pure nothrow
 if (is4dMat!M && is(T : real) && is(U :real)) {
   return rotMat!(M,Vector!(3,T),T) (Vector!(3,T)(x,y,z), angle);
 }
@@ -327,19 +333,24 @@ if (is4dMat!M && isQuaternion!Q) {
 }
 
 unittest {
-  auto m = rotMat(Vec3f.X_AXIS, 0);
-  assert (approxEqual(m.determinant , 1) );
-  assert (m.equal(Mat4f.IDENTITY));
+  import std.conv : to;
+
+  auto m = rotMat(Vec3f.X_AXIS, 0f);
+  assert (approxEqual(m.determinant , 1), "Expected rotation Matrix determinant to be 1, but obtained " ~
+      to!string(m.determinant) ~ "\n" ~ m.toString());
+  assert (m.approxEqual(Mat4f.IDENTITY));
 
   auto q = Qua_f(0,0, PI_2);
   m = rotMat(q);
   assert (approxEqual(m.determinant , 1) );
   // dfmt off
-  assert (m.equal( Mat4d([1, 0, 0, 0,
-                         0, 0,-1, 0,
-                         0, 1, 0, 0,
-                         0, 0, 0, 1]) ));
+  assert (m.approxEqual( Mat4f([
+          1, 0, 0, 0,
+          0, 0,-1, 0,
+          0, 1, 0, 0,
+          0, 0, 0, 1
+  ])));
   // dfmt on
 }
-+/
+
 // TODO More usefull functions, etc...

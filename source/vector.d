@@ -419,7 +419,7 @@ nothrow:
   /**
   * Casting method to convert to other vector types
   */
-  Tout opCast(Tout)() if (isVector!(Tout)) {
+  @nogc Tout opCast(Tout)() pure const if (isVector!(Tout)) {
     import std.conv : to;
 
     Tout newVector = void;

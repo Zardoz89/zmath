@@ -18,7 +18,7 @@ alias Mat3r = Matrix!(real, 3); /// 3D squared matrix of reals
 alias Mat4r = Matrix!(real, 4); ///	4D squared matrix of reals
 
 /**
- * Defines a squared Matrix of n = 2, 3 or 4 size, like a linear array of numbers
+ * Defines a squared Matrix of n = 2, 3 or 4 size, like a linear array of numbers in a row-major order
  */
 public struct Matrix(T, size_t dim_)
       if (__traits(isFloating, T) && dim_ >= 2 && dim_ <= 4)
@@ -27,11 +27,13 @@ nothrow:
   static enum size_t dim = dim_; /// Matrix Dimension
   static enum size_t cells = dim * dim; /// Matrix number of cells
 
+  private alias VRow = Vector!(T, dim);
   private alias VCol = Vector!(T, dim);
 
   union {
-    private T[cells] cell; /// Matrix like of a array of cells in major-column
-    private VCol[dim_] col; /// Matrix like of a array of column vectors
+    private T[cells] cell; /// Matrix like of a array of cells in row-major
+    private T[dim][dim] c; /// Matrix like of a 2d array of cells in row-major
+    private VRow[dim_] row; /// Matrix like of a array of rows vectors
   }
 
   // Consts
@@ -88,47 +90,33 @@ nothrow:
    * Returns i, j cell
    */
   @nogc T opIndex(size_t row, size_t col) pure const {
-    return this.col[col][row];
+    return this.row[row][col];
   }
 
   /**
    * Assigns a new cell value
    */
   @nogc void opIndexAssign(K)(K c, size_t row, size_t col) if (is(K : real)) {
-    this.col[col][row] = c;
+    this.row[row][col] = c;
   }
 
   /**
-   * Returns j column vector
+   * Returns i row vector
    */
-  @nogc VCol opIndex(size_t j) pure const {
-    return col[j];
+  @nogc VRow opIndex(size_t i) pure const {
+    return this.row[i];
   }
 
   /**
-   * Assigns a new column vector
+   * Assigns a new row vector
    */
-  @nogc void opIndexAssign(K)(K v, size_t j) if (isVector!(K)) {
+  @nogc void opIndexAssign(K)(K v, size_t i) if (isVector!(K)) {
     static assert(v.dim <= dim, "Vector has a bigger dimension that this matrix.");
-    static if (!is(K == VCol)) {
-      col[j] = cast(VCol) v;
+    static if (!is(K == VRow)) {
+      this.row[i] = cast(VRow) v;
     } else {
-      col[j] = v;
+      this.row[i] = v;
     }
-  }
-
-  /**
-   * Calcs offset to locate a particular a(i,j), where i -> row ; j -> col
-   */
-  @safe @nogc private nothrow size_t offset(size_t j) pure const {
-    return dim * j;
-  }
-
-  /**
-   * Calcs position in cell array to locate a particular a(i,j), where i -> row ; j -> col
-   */
-  @safe @nogc private nothrow size_t pos(size_t i, size_t j) pure const {
-    return i + offset(j);
   }
 
   // Operations ***************************************
@@ -137,14 +125,18 @@ nothrow:
    * Define Equality
    */
   @nogc bool opEquals()(auto ref const Matrix rhs) pure const {
-    if (col[0] != rhs.col[0] || col[1] != rhs.col[1])
+    if (this.row[0] != rhs.row[0] || this.row[1] != rhs.row[1]) {
       return false;
-    static if (dim >= 3)
-      if (col[2] != rhs.col[2])
+    }
+    static if (dim >= 3) {
+      if (this.row[2] != rhs.row[2]) {
         return false;
-    static if (dim >= 4)
-      if (col[3] != rhs.col[3])
+      }
+    } else static if (dim >= 4) {
+      if (this.row[3] != rhs.row[3]) {
         return false;
+      }
+    }
     return true;
   }
 
@@ -152,16 +144,19 @@ nothrow:
   * Approximated equality
   */
   @nogc bool approxEqual()(auto ref const Matrix rhs, T maxRelDiff = 1e-2, T maxAbsDiff = 1e-05) pure const {
-    if (!col[0].approxEqual(rhs.col[0], maxRelDiff, maxAbsDiff)
-        || !col[1].approxEqual(rhs.col[1], maxRelDiff, maxAbsDiff)) {
+    if (!this.row[0].approxEqual(rhs.row[0], maxRelDiff, maxAbsDiff)
+        || !this.row[1].approxEqual(rhs.row[1], maxRelDiff, maxAbsDiff)) {
       return false;
     }
-    static if (dim >= 3)
-      if (!col[2].approxEqual(rhs.col[2], maxRelDiff, maxAbsDiff))
+    static if (dim >= 3) {
+      if (!this.row[2].approxEqual(rhs.row[2], maxRelDiff, maxAbsDiff)) {
         return false;
-    static if (dim >= 4)
-      if (!col[3].approxEqual(rhs.col[3], maxRelDiff, maxAbsDiff))
+      }
+    } else static if (dim >= 4) {
+      if (!this.row[3].approxEqual(rhs.row[3], maxRelDiff, maxAbsDiff)) {
         return false;
+      }
+    }
     return true;
   }
 
@@ -234,15 +229,14 @@ nothrow:
   */
   @nogc Matrix opBinary(string op)(auto ref const Matrix rhs) pure const if (op == "*") {
     Matrix mat;
-    foreach (size_t j; 0 .. dim) { // Runs along result columns
-      foreach (size_t i; 0 .. dim) { // Runs along result rows
+    foreach (size_t i; 0 .. dim) { // Runs along result rows
+      foreach (size_t j; 0 .. dim) { // Runs along result columns
         static if (dim == 2) {
           mat[i, j] = this[i, 0] * rhs[0, j] + this[i, 1] * rhs[1, j];
-        } else if (dim == 3) {
+        } else static if (dim == 3) {
           mat[i, j] = this[i, 0] * rhs[0, j] + this[i, 1] * rhs[1, j] + this[i, 2] * rhs[2, j];
-        } else if (dim == 4) {
-          mat[i, j] = this[i, 0] * rhs[0, j] + this[i, 1] * rhs[1, j] + this[i,
-            2] * rhs[2, j] + this[i, 3] * rhs[3, j];
+        } else static if (dim == 4) {
+          mat[i, j] = this[i, 0] * rhs[0, j] + this[i, 1] * rhs[1, j] + this[i, 2] * rhs[2, j] + this[i, 3] * rhs[3, j];
         }
       }
     }
@@ -253,17 +247,17 @@ nothrow:
   /**
   * Define Matrix x Vector
   */
-  @nogc VCol opBinary(string op)(auto ref const VCol rhs) pure const if (op == "*") {
+  @nogc VCol opBinary(string op)(auto ref const VRow rhs) pure const if (op == "*") {
     static assert(rhs.dim == dim, "The vector dimension must be equal to Matrix dimmension");
+
     VCol ret;
-    foreach (size_t j; 0 .. dim) { // Runs along result coords
+    foreach (size_t i; 0 .. dim) { // Runs along result coords
       static if (dim == 2) {
-        ret[j] = this[j, 0] * rhs[0] + this[j, 1] * rhs[1];
+        ret[i] = this[i, 0] * rhs[0] + this[i, 1] * rhs[1];
       } else static if (dim == 3) {
-        ret[j] = this[j, 0] * rhs[0] + this[j, 1] * rhs[1] + this[j, 2] * rhs[2];
+        ret[i] = this[i, 0] * rhs[0] + this[i, 1] * rhs[1] + this[i, 2] * rhs[2];
       } else static if (dim == 4) {
-        ret[j] = this[j, 0] * rhs[0] + this[j, 1] * rhs[1] + this[j, 2] * rhs[2] + this[j,
-          3] * rhs[3];
+        ret[i] = this[i, 0] * rhs[0] + this[i, 1] * rhs[1] + this[i, 2] * rhs[2] + this[i, 3] * rhs[3];
       }
     }
     return ret;
@@ -281,8 +275,7 @@ nothrow:
       } else static if (dim == 3) {
         ret[j] = this[0, j] * lhs[0] + this[1, j] * lhs[1] + this[2, j] * lhs[2];
       } else static if (dim == 4) {
-        ret[j] = this[0, j] * lhs[0] + this[1, j] * lhs[1] + this[2, j] * lhs[2] + this[3,
-          j] * lhs[3];
+        ret[j] = this[0, j] * lhs[0] + this[1, j] * lhs[1] + this[2, j] * lhs[2] + this[3, j] * lhs[3];
       }
     }
     return ret;
@@ -308,29 +301,30 @@ nothrow:
   */
   @nogc T determinant() pure const {
     static if (dim == 2) {
-      return cell[pos(0, 0)] * cell[pos(1, 1)] - (cell[pos(1, 0)] * cell[pos(0, 1)]);
+      return this.c[0][0] * this.c[1][1] - (this.c[1][0] * this.c[0][1]);
     } else static if (dim == 3) {
-      T aei = cell[pos(0, 0)] * cell[pos(1, 1)] * cell[pos(2, 2)];
-      T bfg = cell[pos(0, 1)] * cell[pos(1, 2)] * cell[pos(2, 0)];
-      T cdh = cell[pos(0, 2)] * cell[pos(1, 0)] * cell[pos(2, 1)];
-      T afh = cell[pos(0, 0)] * cell[pos(1, 2)] * cell[pos(2, 1)];
-      T bdi = cell[pos(0, 1)] * cell[pos(1, 0)] * cell[pos(2, 2)];
-      T ceg = cell[pos(0, 2)] * cell[pos(1, 1)] * cell[pos(2, 0)];
+      T aei = this.c[0][0] * this.c[1][1] * this.c[2][2];
+      T bfg = this.c[0][1] * this.c[1][2] * this.c[2][0];
+      T cdh = this.c[0][2] * this.c[1][0] * this.c[2][1];
+      T afh = this.c[0][0] * this.c[1][2] * this.c[2][1];
+      T bdi = this.c[0][1] * this.c[1][0] * this.c[2][2];
+      T ceg = this.c[0][2] * this.c[1][1] * this.c[2][0];
       return aei + bfg + cdh - afh - bdi - ceg;
     } else {
       // dfmt off
-      return (cell[pos(0, 0)] * cell[pos(1, 1)] - cell[pos(0, 1)] * cell[pos(1, 0)])
-        * (cell[pos(2, 2)] * cell[pos(3, 3)] - cell[pos(2, 3)] * cell[pos(3, 2)])
-        - (cell[pos(0, 0)] * cell[pos(1, 2)] - cell[pos(0, 2)] * cell[pos(1, 0)])
-        * (cell[pos(2, 1)] * cell[pos(3, 3)] - cell[pos(2, 3)] * cell[pos(3, 1)])
-        + (cell[pos(0, 0)] * cell[pos(1, 3)] - cell[pos(0, 3)] * cell[pos(1, 0)])
-        * (cell[pos(2, 1)] * cell[pos(3, 2)] - cell[pos(2, 2)] * cell[pos(3, 1)])
-        + (cell[pos(0, 1)] * cell[pos(1, 2)] - cell[pos(0, 2)] * cell[pos(1, 1)])
-        * (cell[pos(2, 0)] * cell[pos(3, 3)] - cell[pos(2, 3)] * cell[pos(3, 0)])
-        - (cell[pos(0,1)] * cell[pos(1, 3)] - cell[pos(0, 3)] * cell[pos(1, 1)])
-        * (cell[pos(2, 0)] * cell[pos(3, 2)] - cell[pos(2, 2)] * cell[pos(3, 0)])
-        + (cell[pos(0, 2)] * cell[pos(1, 3)] - cell[pos(0, 3)] * cell[pos(1, 2)])
-        * (cell[pos(2, 0)] * cell[pos(3, 1)] - cell[pos(2, 1)] * cell[pos(3, 0)]);
+      return (
+           this.c[0][0] * this.c[1][1] - this.c[0][1] * this.c[1][0])
+        * (this.c[2][2] * this.c[3][3] - this.c[2][3] * this.c[3][2])
+        - (this.c[0][0] * this.c[1][2] - this.c[0][2] * this.c[1][0])
+        * (this.c[2][1] * this.c[3][3] - this.c[2][3] * this.c[3][1])
+        + (this.c[0][0] * this.c[1][3] - this.c[0][3] * this.c[1][0])
+        * (this.c[2][1] * this.c[3][2] - this.c[2][2] * this.c[3][1])
+        + (this.c[0][1] * this.c[1][2] - this.c[0][2] * this.c[1][1])
+        * (this.c[2][0] * this.c[3][3] - this.c[2][3] * this.c[3][0])
+        - (this.c[0][1] * this.c[1][3] - this.c[0][3] * this.c[1][1])
+        * (this.c[2][0] * this.c[3][2] - this.c[2][2] * this.c[3][0])
+        + (this.c[0][2] * this.c[1][3] - this.c[0][3] * this.c[1][2])
+        * (this.c[2][0] * this.c[3][1] - this.c[2][1] * this.c[3][0]);
       // dfmt on
     }
   }
@@ -429,7 +423,7 @@ nothrow:
   * Checks that the matrix not have a weird NaN value
   */
   @nogc bool isOk() pure const {
-    foreach (c; col) {
+    foreach (c; this.row) {
       if (!c.isOk())
         return false;
     }
@@ -440,7 +434,7 @@ nothrow:
   * Checks that the matrix have finite values
   */
   @nogc bool isFinite() pure const {
-    foreach (c; col) {
+    foreach (c; this.row) {
       if (!c.isFinite())
         return false;
     }
@@ -465,7 +459,7 @@ nothrow:
   /**
   * Casting operation that allow convert between Matrix types
   */
-  Tout opCast(Tout)() if (isMatrix!(Tout) && Tout.dim >= dim) {
+  @nogc Tout opCast(Tout)() pure const if (isMatrix!(Tout) && Tout.dim >= dim) {
     static assert(isMatrix!(Tout), "This type not is a Matrix");
     static assert(Tout.dim >= dim, "Original Matrix bigger that destiny" ~ " Vector");
     Tout newMat;
@@ -496,7 +490,7 @@ nothrow:
       foreach (i; 0 .. dim) {
         ret ~= "|";
         foreach (j; 0 .. dim) {
-          ret ~= to!string(cell[pos(i, j)]);
+          ret ~= to!string(this.c[i][j]);
           if (j < (dim - 1))
             ret ~= ", ";
         }
@@ -561,17 +555,18 @@ unittest {
 }
 
 unittest {
-  auto tcol = Mat3r.IDENTITY;
-  auto v = Vec2r(-1, -2);
-  auto v2 = Vec3f(1, 2, 3);
-  tcol[1] = v; // Ha! internal vector casting
-  tcol[2] = v2;
-  assert(tcol[0, 1] == -1);
-  assert(tcol[1, 1] == -2);
-  assert(tcol[2, 1] == 0);
-  assert(tcol[0, 2] == 1);
-  assert(tcol[1, 2] == 2);
-  assert(tcol[2, 2] == 3);
+  // Testing opIndexAssign of rows
+  auto m = Mat3r.IDENTITY;
+  const v = Vec2r(-1, -2);
+  const v2 = Vec3f(1, 2, 3);
+  m[1] = v; // Ha! internal vector casting
+  m[2] = v2;
+  assert(m[1, 0] == -1);
+  assert(m[1, 1] == -2);
+  assert(m[1, 2] == 0);
+  assert(m[2, 0] == 1);
+  assert(m[2, 1] == 2);
+  assert(m[2, 2] == 3);
 }
 
 unittest {
@@ -641,10 +636,11 @@ unittest {
   }
 
   // dfmt off
-  auto b = Mat4f([2, 1, 1, 1,
-            1, 2, 1, 1,
-            1, 1, 2, 1,
-            1, 1, 1, 2]);
+  auto b = Mat4f([
+      2, 1, 1, 1,
+      1, 2, 1, 1,
+      1, 1, 2, 1,
+      1, 1, 1, 2]);
   // dfmt on
 
   b = b * 2;
@@ -654,43 +650,58 @@ unittest {
 unittest {
   // Check Matrix multiplication - Neutral element
   // dfmt off
-  auto a = Mat4f([2, 1, 1, 1,
-                1, 2, 1, 1,
-                1, 1, 2, 1,
-                1, 1, 1, 2]);
+  const a = Mat4f([
+      2, 1, 1, 1,
+      1, 2, 1, 1,
+      1, 1, 2, 1,
+      1, 1, 1, 2]);
   // dfmt on
-  auto axi = a * Mat4f.IDENTITY;
-  auto ixa = Mat4f.IDENTITY * a;
+  const axi = a * Mat4f.IDENTITY;
+  const ixa = Mat4f.IDENTITY * a;
+  assert(a == axi, "Multiplication by identity isn't correct");
   assert(axi == ixa);
-  assert(a == axi);
 
   // dfmt off
-  auto a3 = Mat3r([
+  const a3 = Mat3r([
       1,4,7,
       2,5,8,
       3,6,9]);
-  auto b3 = Mat3r([
+  const b3 = Mat3r([
       9,6,3,
       8,5,2,
       7,4,1]);
-  auto shouldBeC3 = Mat3r([
-      30,84,138,
-      24,69,114,
-      18,54,90]);
+  const shouldBeC3 = Mat3r([
+       90, 54, 18,
+      114, 69, 24,
+      138, 84, 30]);
+  const shouldBeD3 = Mat3r([
+      30, 84, 138,
+      24, 69, 114,
+      18, 54,  90]);
   // dfmt on
-  auto c3 = a3 * b3;
-  auto d3 = b3 * a3;
-  assert(c3 == shouldBeC3);
+  const c3 = a3 * b3;
+  const d3 = b3 * a3;
+  assert(c3 == shouldBeC3, "A * B should be \n" ~ shouldBeC3.toString() ~ " but was\n" ~ c3.toString());
   assert(c3 != d3);
+  assert(d3 == shouldBeD3, "B * A should be \n" ~ shouldBeD3.toString() ~ " but was\n" ~ d3.toString());
 }
 
 unittest {
-  auto ide = Mat4f.IDENTITY;
-  auto vec = ide.VCol(1, 2, 3, 4);
-  auto vecl = vec * ide;
-  auto vecr = ide * vec;
-  assert(vec == vecl);
-  assert(vec == vecr); // TODO : Do it with other type of matrix
+  // dfmt off
+  const mat = Mat2f([
+      0, -1,
+      1,  0]);
+  // dfmt on
+  const vec = Vec2f(1, 2);
+  const vecl = vec * mat;
+  const vecr = mat * vec;
+  assert(vec != vecl);
+  assert(vec != vecr);
+  assert(vecl != vecr);
+  assert(vecr == Vec2f(-2, 1));
+  assert(vecl == Vec2f(2, -1));
+
+  // TODO : Do it with other type of matrix
 }
 
 unittest { // Check Matrix transposition
