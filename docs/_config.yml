@@ -1,2 +1,7 @@
 name: ZMath
+title: ZMath
+description: A quick&dirty 2d & 3d math library for DLang
 theme: jekyll-theme-slate
+markdown: gfm
+plugins:
+  - jekyll-relative-links

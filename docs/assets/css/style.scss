@@ -1,0 +1,35 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+header nav {
+  color: #fff;
+
+  ul {
+    white-space: nowrap;
+    display: inline-block;
+    padding: 0;
+
+    li {
+      display: inline-block;
+
+      a {
+        padding: 0.5em;
+        font-weight: bold;
+      }
+
+      &.current {
+        a,
+        a:visited,
+        a:hover {
+          color: #fff;
+          text-decoration: none;
+          background-color: #0090ff;
+          border-radius: 2px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+      }
+    }
+  }
+}

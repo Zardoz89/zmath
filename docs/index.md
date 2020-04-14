@@ -1,3 +1,8 @@
+---
+layout: default
+title: About
+---
+
 ZMath it's a quick&dirty lib for Vectors, Matrix and Quaternions maths wirte on DLang, and using standard float point types.
 
 I made it on the way of self-learning D, but I think that could be usefull, so I open the source code.
@@ -14,4 +19,5 @@ For any serius usage, I recomend the excelent and well maintained gfm library : 
   - Aligned boxes
   - Convex shapes
 - Use SIMD
+
 
