@@ -24,8 +24,8 @@
 
           <nav>
             <ul>
-              <li class="current"><a>About</a></li>
-              <li><a href="#">Documentation</a></li>
+              <li {% if page.name == "index.md" %} class="current"{% endif %} ><a href="index.html">About</a></li>
+              <li {% if page.name == "docs.md" %} class="current"{% endif %} ><a href="docs.html">Documentation</a></li>
             </ul>
           </nav>
 
