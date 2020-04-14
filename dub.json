@@ -1,6 +1,7 @@
 {
   "name": "zmath",
   "description": "A small quick made lib for 2d/3d Math, over standard float point type of D lang.",
+  "homepage": "https://github.com/Zardoz89/zmath",
   "license": "MIT",
   "authors": [
     "Luis Panadero Guardeño"
