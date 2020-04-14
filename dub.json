@@ -1,9 +1,9 @@
 {
-	"authors": [
-		"Luis Panadero Guardeño"
-	],
-	"copyright": "Copyright © 2020, Luis Panadero Guardeño",
-	"description": "A small quick made lib for 2d/3d Math, over standard float point type of D lang.",
-	"license": "MIT",
-	"name": "zmath"
+  "name": "zmath",
+  "description": "A small quick made lib for 2d/3d Math, over standard float point type of D lang.",
+  "license": "MIT",
+  "authors": [
+    "Luis Panadero Guardeño"
+  ],
+  "copyright": "Copyright © 2020, Luis Panadero Guardeño"
 }
