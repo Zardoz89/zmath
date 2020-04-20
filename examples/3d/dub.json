@@ -1,0 +1,23 @@
+{
+  "name": "3d",
+  "description": "Usig zmath with OpenGL",
+  "authors": [
+  "Luis Panadero Guardeño"
+  ],
+  "copyright": "Copyright © 2020, Luis Panadero Guardeño",
+  "license": "MIT",
+  "dependencies": {
+      "bindbc-sdl": "~>0.16.0",
+      "bindbc-opengl": "~>0.12.0",
+      "zmath":  {
+        "version": "*",
+        "path": "../.."
+      }
+    },
+  "versions": [
+    "SDL_2010",
+    "GL_33",
+    "GL_AllowDeprecated"
+  ],
+  "targetPath": "bin"
+}
