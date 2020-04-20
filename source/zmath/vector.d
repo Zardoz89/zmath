@@ -452,7 +452,7 @@ nothrow:
   /**
    * Returns a string representation of this vector
    */
-  string toString() {
+  string toString() const {
     import std.conv : to;
     try {
       string ret = "[" ~ to!string(x) ~ ", " ~ to!string(y);
