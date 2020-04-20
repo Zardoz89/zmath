@@ -90,14 +90,14 @@ nothrow:
    * Returns i, j cell
    */
   @nogc T opIndex(size_t row, size_t col) pure const {
-    return this.row[row][col];
+    return this.c[row][col];
   }
 
   /**
    * Assigns a new cell value
    */
-  @nogc void opIndexAssign(K)(K c, size_t row, size_t col) if (is(K : real)) {
-    this.row[row][col] = c;
+  @nogc void opIndexAssign(K)(K val, size_t row, size_t col) if (is(K : real)) {
+    this.c[row][col] = val;
   }
 
   /**
@@ -485,17 +485,18 @@ nothrow:
   string toString() const {
     import std.conv : to;
 
-    string ret; // I -> row, j->col
+    string ret;
     try {
-      foreach (i; 0 .. dim) {
-        ret ~= "|";
-        foreach (j; 0 .. dim) {
-          ret ~= to!string(this.c[i][j]);
-          if (j < (dim - 1))
+      foreach (row; 0 .. dim) {
+        ret ~= "|" ~ this.row[row].toString();
+        /+foreach (col; 0 .. dim) {
+          ret ~= to!string(this.c[row][col]);
+          if (col < (dim - 1))
             ret ~= ", ";
         }
+        +/
         ret ~= "|";
-        if (i < (dim - 1))
+        if (row < (dim - 1))
           ret ~= "\n";
       }
     } catch (Exception ex) {

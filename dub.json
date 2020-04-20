@@ -6,5 +6,8 @@
   "authors": [
     "Luis Panadero Guardeño"
   ],
-  "copyright": "Copyright © 2020, Luis Panadero Guardeño"
+  "copyright": "Copyright © 2020, Luis Panadero Guardeño",
+  "subPackages": [
+    "examples/3d"
+  ]
 }
