@@ -884,7 +884,7 @@
   <section class="section ddoc_sections">
   <div class="ddoc_summary">
   <p class="para">
-    Creates a trasnlation matrix from a 2d/3d Vector
+    Creates a translation matrix from a 2d/3d Vector
 
   </p>
 </div>
@@ -1414,6 +1414,39 @@
 
     </tbody>
   </table>
+</div>
+
+</section>
+
+</div>
+
+</li><li class="ddoc_member">
+  <div class="ddoc_member_header">
+  <div class="ddoc_header_anchor">
+  <a href="#lookAt" id="lookAt"><code class="code">lookAt</code></a>
+</div>
+</div><div class="ddoc_decl">
+  <section class="section">
+    <div class="declaration">
+      <h4>Declaration</h4>
+      <div class="dlang">
+        <p class="para">
+          <code class="code">
+            <span class="ddoc_anchor" id="lookAt"></span>pure nothrow @nogc M <code class="code">lookAt</code>(M = Mat4f, V = Vec3f, T = float)(V <code class="code">eye</code>, V <code class="code">target</code>, V <code class="code">up</code>) if (is4dMat!M &amp;&amp; isNumeric!T &amp;&amp; isVector!V &amp;&amp; (V.dim &lt;= 3));
+
+          </code>
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
+<div class="ddoc_decl">
+  <section class="section ddoc_sections">
+  <div class="ddoc_summary">
+  <p class="para">
+    Look At projection
+ Based on gfm code
+  </p>
 </div>
 
 </section>
